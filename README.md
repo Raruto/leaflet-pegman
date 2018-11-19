@@ -41,7 +41,7 @@ _For a working example (without API Key) see [demo](https://raruto.github.io/exa
     ...
     </body>
     ```
-3. **create your first simple “leaflet-google” slippy map**
+3. **create your first simple “leaflet-pegman slippy map**
     ```html
     <script>
       var map = L.map('map');
