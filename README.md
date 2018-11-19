@@ -44,22 +44,22 @@ _For a working example (without API Key) see [demo](https://raruto.github.io/exa
 3. **create your first simple “leaflet-google” slippy map**
     ```html
     <script>
-      var lmap = L.map('lmap');
-      lmap.setView(new L.LatLng(45, 9.5), 5);
+      var map = L.map('map');
+      map.setView(new L.LatLng(45, 9.5), 5);
 
       var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         maxZoom: 17,
         attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
         opacity: 0.90
         });
-      OpenTopoMap.addTo(lmap);
+      OpenTopoMap.addTo(map);
 
       var pegmanControl = new L.Control.Pegman({
         position: 'bottomright', // position of control inside the map
         clickableStreetViewLayer: false, // WARNING: when enabled it will violate Google ToS rules
         theme: "leaflet-pegman-v3-default", // or "leaflet-pegman-v3-small"
       });
-      pegmanControl.addTo(lmap);
+      pegmanControl.addTo(map);
     </script>
     ```
 
