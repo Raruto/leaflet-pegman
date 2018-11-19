@@ -5,7 +5,9 @@ _For a working example (without API Key) see [demo](https://raruto.github.io/exa
 
 ---
 
-[![Pegman Bio](https://raruto.github.io/img/pegman-bio.jpg)](https://raruto.github.io)
+<p align="center">
+    <a href="https://raruto.github.io" rel="nofollow"><img src="https://raruto.github.io/img/pegman-bio.png" alt="Pegman Bio" /></a>
+</p>
 
 > _Initally based on the [work](http://jsfiddle.net/pegues/a5mn1ogu/) of **Daniel Pegues**_
 
