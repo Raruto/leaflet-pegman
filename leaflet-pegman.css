@@ -16,7 +16,6 @@
 	width: 30px;
 	height: 30px;
 	background-color: #fff;
-	border-radius: 3px;
 	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 	cursor: grab;
 }
@@ -53,7 +52,6 @@
 	content: ' ';
 	display: block;
 	z-index: -1;
-	border-radius: 1px;
 	opacity: 0.5;
 	background: linear-gradient(#d1d1d1, #F5F5F5, #fbfbfb);
 }
@@ -132,6 +130,10 @@
 
 .pegman-marker {
 	background: transparent url("https://raruto.github.io/cdn/leaflet-pegman/0.0.1/maps.gstatic.com/api-3/cb_scout5.png") no-repeat scroll 0 -364px;
+}
+
+.leaflet-left .pegman-control:hover .pegman-button {
+	transform: scale(-1,1);
 }
 
 /*Pegman v3 default theme*/

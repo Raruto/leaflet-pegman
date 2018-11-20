@@ -116,6 +116,7 @@ L.Control.Pegman = L.Control.extend({
 
 		// Disable "mousedown touchstart dblclick" events
 		L.DomEvent.disableClickPropagation(this._container);
+		L.DomEvent.disableClickPropagation(this._panoDiv);		
 
 		/* ******************************************************* */
 
