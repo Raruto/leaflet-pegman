@@ -77,6 +77,7 @@ L.Control.Pegman = L.Control.extend({
 			this._googleStreetViewLayer = L.tileLayer('https://{s}.googleapis.com/vt?lyrs=svv&style=40,18&x={x}&y={y}&z={z}', {
 				attribution: 'Map data: &copy; <a href="https://www.google.com/intl/en/help/terms_maps.html">Google</a>',
 				subdomains: ['mts1', 'mts2', 'mts3'],
+				pane: "overlayPane",
 			});
 			this._mouseTileTracker = new this.MouseTileTracker(this._map);
 		} else {
@@ -84,6 +85,7 @@ L.Control.Pegman = L.Control.extend({
 			// GoogleMutant SHOULD PROVIDE a ToS compliant way of loading Google Map's tiles into Leaflet
 			this._googleStreetViewLayer = L.gridLayer.googleMutant({
 				attribution: 'Map data: &copy; <a href="https://www.google.com/intl/en/help/terms_maps.html">Google</a>',
+				pane: "overlayPane",
 				//type: null, // (illegal?) workaround used to force a transparent background using null maptype_id
 				type: "roadmap",
 				styles: [{
@@ -122,6 +124,7 @@ L.Control.Pegman = L.Control.extend({
 
 		this._pegmanMarker.on("dragend", this.onPegmanMarkerDragged, this);
 		this._map.on("click", this.onMapClick, this);
+		this._map.on("layeradd", this.onMapLayerAdd, this);
 
 		google.maps.event.addListener(this._panorama, 'closeclick', L.bind(this.onStreetViewPanoramaClose, this));
 
@@ -297,6 +300,10 @@ L.Control.Pegman = L.Control.extend({
 	onMapClick: function(e) {
 		if (this._streetViewLayerEnabled)
 			this.findStreetViewData(e.latlng.lat, e.latlng.lng);
+	},
+
+	onMapLayerAdd: function(e) {
+		this._googleStreetViewLayer.bringToFront();
 	},
 
 	onStreetViewPanoramaClose: function() {
