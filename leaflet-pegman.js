@@ -109,18 +109,21 @@ L.Control.Pegman = L.Control.extend({
 
 		this._draggable.styleCursor(false);
 
+		// Toggle on/off SV Layer on Pegman's Container single clicks
+		interact(this._container).on("tap", L.bind(this.toggleStreetViewLayer, this));
+
+		// Disable "mousedown touchstart dblclick" events
+		L.DomEvent.disableClickPropagation(this._container);
+
 		/* ******************************************************* */
 
 		L.DomEvent.on(document, 'mousemove', this.mouseMoveTracking, this);
 		L.DomEvent.on(document, 'keyup', this.keyUpTracking, this);
 
-		this._pegmanDragFix();
-		this._pegmanClickFix();
-
 		this._pegmanMarker.on("dragend", this.onPegmanMarkerDragged, this);
 		this._map.on("click", this.onMapClick, this);
 
-		google.maps.event.addListener(this._panorama, 'closeclick', L.bind(this.closeStreetViewPanorama, this));
+		google.maps.event.addListener(this._panorama, 'closeclick', L.bind(this.onStreetViewPanoramaClose, this));
 
 		return this._container;
 	},
@@ -144,12 +147,14 @@ L.Control.Pegman = L.Control.extend({
 	},
 
 	_addClasses: function(el, classNames) {
+		var classNames = classNames.split(" ");
 		for (var s in classNames) {
 			L.DomUtil.addClass(el, classNames[s]);
 		}
 	},
 
 	_removeClasses: function(el, classNames) {
+		var classNames = classNames.split(" ");
 		for (var s in classNames) {
 			L.DomUtil.removeClass(el, classNames[s]);
 		}
@@ -184,67 +189,68 @@ L.Control.Pegman = L.Control.extend({
 	_updateClasses: function(action) {
 		switch (action) {
 			case "pegman-dragging":
-				this._removeClasses(this._pegman, ["dropped"]);
-				this._addClasses(this._container, ["dragging"]);
+				this._removeClasses(this._pegman, "dropped");
+				this._addClasses(this._container, "dragging");
 				break;
 			case "pegman-dragged":
-				this._removeClasses(this._pegman, ["can-drop", "dragged", "left", "right", "active", "dropped"]);
+				this._removeClasses(this._pegman, "can-drop dragged left right active dropped");
 				this._removeAttributes(this._pegman, ["style", "data-x", "data-y"]);
 				break;
 			case "dropzone-actived":
-				this._addClasses(this._map._container, ["drop-active"]);
+				this._addClasses(this._map._container, "drop-active");
 				break;
 			case "dropzone-drag-entered":
-				this._addClasses(this._pegman, ["active", "can-drop"]);
-				this._addClasses(this._map._container, ["drop-target"]);
+				this._addClasses(this._pegman, "active can-drop");
+				this._addClasses(this._map._container, "drop-target");
 				break;
 			case "dropzone-drag-leaved":
-				this._removeClasses(this._map._container, ["drop-target"]);
-				this._removeClasses(this._pegman, ["can-drop"]);
+				this._removeClasses(this._map._container, "drop-target");
+				this._removeClasses(this._pegman, "can-drop");
 				break;
 			case "dropzone-drop":
-				this._removeClasses(this._container, ["dragging"]);
-				this._removeClasses(this._pegman, ["active", "left", "right"]);
-				this._addClasses(this._pegman, ["dropped"]);
-				this._removeClasses(this._pegman, ["can-drop", "dragged", "left", "right", "active", "dropped"]);
+				this._removeClasses(this._container, "dragging");
+				this._removeClasses(this._pegman, "active left right");
+				this._addClasses(this._pegman, "dropped");
+				this._removeClasses(this._pegman, "can-drop dragged left right active dropped");
 				break;
 			case "dropzone-deactivated":
-				this._removeClasses(this._pegman, ["active", "left", "right"]);
-				this._removeClasses(this._map._container, ["drop-active", "drop-target"]);
+				this._removeClasses(this._pegman, "active left right");
+				this._removeClasses(this._map._container, "drop-active drop-target");
 				break;
 			case "mousemove-top":
-				this._addClasses(this._pegman, ["top"]);
-				this._removeClasses(this._pegman, ["bottom", "right", "left"]);
+				this._addClasses(this._pegman, "top");
+				this._removeClasses(this._pegman, "bottom right left");
 				break;
 			case "mousemove-bottom":
-				this._addClasses(this._pegman, ["bottom"]);
-				this._removeClasses(this._pegman, ["top", "right", "left"]);
+				this._addClasses(this._pegman, "bottom");
+				this._removeClasses(this._pegman, "top right left");
 				break;
 			case "mousemove-left":
-				this._addClasses(this._pegman, ["left"]);
-				this._removeClasses(this._pegman, ["right", "top", "bottom"]);
+				this._addClasses(this._pegman, "left");
+				this._removeClasses(this._pegman, "right top bottom");
 				break;
 			case "mousemove-right":
-				this._addClasses(this._pegman, ["right"]);
-				this._removeClasses(this._pegman, ["left", "top", "bottom"]);
+				this._addClasses(this._pegman, "right");
+				this._removeClasses(this._pegman, "left top bottom");
 				break;
 			case "pegman-added":
-				this._addClasses(this._container, ["active"]);
+				this._addClasses(this._container, "active");
 				break;
 			case "pegman-removed":
-				this._removeClasses(this._container, ["active"]);
+				this._removeClasses(this._container, "active");
 				break;
 			case "streetview-shown":
-				this._addClasses(this._container, ["streetview-layer-active"]);
+				this._addClasses(this._container, "streetview-layer-active");
 				break;
 			case "streetview-hidden":
-				this._removeClasses(this._container, ["streetview-layer-active"]);
+				this._removeClasses(this._container, "streetview-layer-active");
 				break;
 			default:
 				throw "Unhandled event:" + action;
 				return;
 		}
 		this._log(action);
+		this.fireEvent("svpc_" + action);
 	},
 
 	/* ******************************************************* */
@@ -283,10 +289,30 @@ L.Control.Pegman = L.Control.extend({
 		this._updateClasses("dropzone-deactivated");
 	},
 
+	onPegmanMarkerDragged: function(e) {
+		this._pegmanMarkerCoords = this._pegmanMarker.getLatLng();
+		this.findStreetViewData(this._pegmanMarkerCoords.lat, this._pegmanMarkerCoords.lng);
+	},
+
+	onMapClick: function(e) {
+		if (this._streetViewLayerEnabled)
+			this.findStreetViewData(e.latlng.lat, e.latlng.lng);
+	},
+
+	onStreetViewPanoramaClose: function() {
+		this.clear();
+	},
+
 	/* ******************************************************* */
 
+	clear: function() {
+		this.pegmanRemove();
+		this.hideStreetViewLayer();
+		this.closeStreetViewPanorama();
+	},
+
 	toggleStreetViewLayer: function(e) {
-		this._streetViewLayerEnabled ? this.hideStreetViewLayer() : this.showStreetViewLayer();
+		this._streetViewLayerEnabled ? this.clear() : this.showStreetViewLayer();
 	},
 
 	pegmanAdd: function() {
@@ -298,80 +324,12 @@ L.Control.Pegman = L.Control.extend({
 
 	pegmanRemove: function() {
 		this._pegmanMarker.removeFrom(this._map);
-		this.hideStreetViewLayer();
 		this._updateClasses("pegman-removed");
 	},
 
-	_pegmanDragFix: function() {
-		// Disable dragging when user's cursor enters the element
-		L.DomEvent.on(this._container, 'mouseover', function() {
-			this._map.dragging.disable();
-		}, this);
-
-		// Re-enable dragging when user's cursor leaves the element
-		L.DomEvent.on(this._container, 'mouseout', function() {
-			this._map.dragging.enable();
-		}, this);
-	},
-
-	_pegmanClickFix: function() {
-		// Prevent click event pass throught parent Leaflet Map
-		L.DomEvent.on(this._container, 'click', function(e) {
-			L.DomEvent.stopPropagation(e);
-		}, this);
-
-		interact(this._container).on("tap", L.bind(this.toggleStreetViewLayer, this));
-	},
-
 	/* ******************************************************* */
-
-	mouseMoveTracking: function(e) {
-		var mousePos = this._mousePos;
-
-		// Top <--> Bottom
-		if (e.pageY < mousePos.old.y) {
-			mousePos.direction.y = 'top';
-			this._updateClasses("mousemove-top");
-		} else if (e.pageY > mousePos.old.y) {
-			mousePos.direction.y = 'bottom';
-			this._updateClasses("mousemove-bottom");
-		}
-		// Left <--> Right
-		if (e.pageX < mousePos.old.x) {
-			mousePos.direction.x = 'left';
-			this._updateClasses("mousemove-left");
-		} else if (e.pageX > mousePos.old.x) {
-			mousePos.direction.x = 'right';
-			this._updateClasses("mousemove-right");
-		}
-
-		mousePos.old.x = e.pageX;
-		mousePos.old.y = e.pageY;
-	},
-
-	keyUpTracking: function(e) {
-		if (e.keyCode == 27) {
-			this._log('escape pressed');
-			this.closeStreetViewPanorama();
-		}
-	},
-
-	/* ******************************************************* */
-
-	onPegmanMarkerDragged: function(e) {
-		this._pegmanMarkerCoords = this._pegmanMarker.getLatLng();
-		this.findStreetViewData(this._pegmanMarkerCoords.lat, this._pegmanMarkerCoords.lng);
-	},
-
-	onMapClick: function(e) {
-		if (this._streetViewLayerEnabled)
-			this.findStreetViewData(e.latlng.lat, e.latlng.lng);
-	},
-
-	/********************************************************/
 
 	closeStreetViewPanorama: function() {
-		this.pegmanRemove();
 		this._panoDiv.style.display = "none";
 	},
 
@@ -383,14 +341,12 @@ L.Control.Pegman = L.Control.extend({
 		this._googleStreetViewLayer.removeFrom(this._map);
 		this._streetViewLayerEnabled = false;
 		this._updateClasses("streetview-hidden");
-		this.fireEvent("streetview-layer-hidden");
 	},
 
 	showStreetViewLayer: function() {
 		this._googleStreetViewLayer.addTo(this._map);
 		this._streetViewLayerEnabled = true;
 		this._updateClasses("streetview-shown");
-		this.fireEvent("streetview-layer-shown");
 	},
 
 	findStreetViewData: function(lat, lng) {
@@ -419,7 +375,48 @@ L.Control.Pegman = L.Control.extend({
 			this._panorama.setVisible(true);
 		} else {
 			this._log("Street View data not found for this location.");
-			// this.closeStreetViewPanorama(); // TODO: add a visual feedback when no SV data available
+			// this.clear(); // TODO: add a visual feedback when no SV data available
+		}
+	},
+
+	/********************************************************/
+
+	/**
+	 * mouseMoveTracking
+	 * @desc internal function used to style pegman while dragging
+	 */
+	mouseMoveTracking: function(e) {
+		var mousePos = this._mousePos;
+
+		// Top <--> Bottom
+		if (e.pageY < mousePos.old.y) {
+			mousePos.direction.y = 'top';
+			this._updateClasses("mousemove-top");
+		} else if (e.pageY > mousePos.old.y) {
+			mousePos.direction.y = 'bottom';
+			this._updateClasses("mousemove-bottom");
+		}
+		// Left <--> Right
+		if (e.pageX < mousePos.old.x) {
+			mousePos.direction.x = 'left';
+			this._updateClasses("mousemove-left");
+		} else if (e.pageX > mousePos.old.x) {
+			mousePos.direction.x = 'right';
+			this._updateClasses("mousemove-right");
+		}
+
+		mousePos.old.x = e.pageX;
+		mousePos.old.y = e.pageY;
+	},
+
+	/**
+	 * keyUpTracking
+	 * @desc internal function used to track keyup events
+	 */
+	keyUpTracking: function(e) {
+		if (e.keyCode == 27) {
+			this._log('escape pressed');
+			this.clear();
 		}
 	},
 
