@@ -60,6 +60,7 @@
 
 .pegman-control.streetview-layer-active {
 	background: linear-gradient(#d1d1d1, #F5F5F5, #fbfbfb);
+	background-clip: padding-box;
 }
 
 .pegman {

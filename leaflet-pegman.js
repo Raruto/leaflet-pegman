@@ -59,7 +59,7 @@ L.Control.Pegman = L.Control.extend({
 	onAdd: function(map) {
 		this._map = map;
 
-		this._container = L.DomUtil.create('div', 'leaflet-pegman pegman-control');
+		this._container = L.DomUtil.create('div', 'leaflet-pegman pegman-control leaflet-bar');
 		this._pegman = L.DomUtil.create('div', 'pegman draggable drag-drop', this._container);
 		this._pegmanButton = L.DomUtil.create('div', 'pegman-button', this._container);
 		this._pegmanMarker = L.marker([0, 0], this._pegmanMarkerOpts);
