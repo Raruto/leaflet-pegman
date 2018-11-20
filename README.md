@@ -28,8 +28,8 @@ _For a working example (without API Key) see [demo](https://raruto.github.io/exa
     <!-- Leaflet-GoogleMutant -->
     <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.7.0/Leaflet.GoogleMutant.js"></script>
     <!-- Leaflet-Pegman -->
-    <link rel="stylesheet" href="https://raruto.github.io/cdn/leaflet-pegman/0.0.1/leaflet-pegman.css" />
-    <script src="https://raruto.github.io/cdn/leaflet-pegman/0.0.1/leaflet-pegman.js"></script>
+    <link rel="stylesheet" href="https://raruto.github.io/cdn/leaflet-pegman/0.0.3/leaflet-pegman.css" />
+    <script src="https://raruto.github.io/cdn/leaflet-pegman/0.0.3/leaflet-pegman.js"></script>
     ...
     </head>
     ```
