@@ -1,0 +1,30 @@
+{
+  "name": "leaflet-pegman",
+  "version": "0.0.5",
+  "description": "A Leaflet plugin that allows easy integration with the Google StreetView Service API",
+  "main": "leaflet-pegman.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Raruto/leaflet-pegman.git"
+  },
+  "keywords": [
+    "leaflet",
+    "google-maps",
+    "javascript",
+    "leaflet-and-google",
+    "streetview",
+    "google-streetview-api",
+    "pegman",
+    "leaflet-control",
+    "streetview-control"
+  ],
+  "author": "Raruto",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Raruto/leaflet-pegman/issues"
+  },
+  "homepage": "https://github.com/Raruto/leaflet-pegman#readme"
+}
