@@ -70,7 +70,7 @@ L.Control.Pegman = L.Control.extend({
 
     L.DomUtil.addClass(this._map._container, this.options.theme);
 
-    L.DomEvent.on(this._panoDiv, 'click mousedown touchstart dblclick', this._disableClickPropagation, this);
+		L.DomEvent.disableClickPropagation(this._panoDiv);
     L.DomEvent.on(this._container, 'click mousedown touchstart dblclick', this._disableClickPropagation, this);
 
     this._container.addEventListener('mousedown', this._loadScripts.bind(this, true), false);
