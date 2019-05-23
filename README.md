@@ -1,7 +1,7 @@
 # leaflet-pegman.js
 A Leaflet plugin that allows easy integration with the Google StreetView Service API
 
-_For a working example (without API Key) see [demo](https://raruto.github.io/examples/leaflet-pegman/leaflet-pegman.html) and [demo](https://raruto.github.io/examples/leaflet-pegman/leaflet-pegman-clickableStreetViewLayer.html)_
+_For a working example (without API Key) see [demo](https://raruto.github.io/examples/leaflet-pegman/leaflet-pegman.html) and [demo](https://raruto.github.io/examples/leaflet-pegman/leaflet-pegman-lazyLoading.html)_
 
 ---
 
@@ -21,15 +21,15 @@ _For a working example (without API Key) see [demo](https://raruto.github.io/exa
     <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=<INSERT_HERE_API_KEY>"></script>
     <!-- interact.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.2.9/interact.min.js"></script>
+    <script src="https://unpkg.com/interact.js@1.2.8/dist/interact.min.js"></script>
     <!-- Leaflet (JS/CSS) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"></script>
     <!-- Leaflet-GoogleMutant -->
     <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.7.0/Leaflet.GoogleMutant.js"></script>
     <!-- Leaflet-Pegman -->
-    <link rel="stylesheet" href="https://raruto.github.io/cdn/leaflet-pegman/0.0.5/leaflet-pegman.css" />
-    <script src="https://raruto.github.io/cdn/leaflet-pegman/0.0.5/leaflet-pegman.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-pegman/@latest/leaflet-pegman.css" />
+    <script src="https://unpkg.com/leaflet-pegman/@latest/leaflet-pegman.js"></script>
     ...
     </head>
     ```
@@ -56,7 +56,6 @@ _For a working example (without API Key) see [demo](https://raruto.github.io/exa
 
       var pegmanControl = new L.Control.Pegman({
         position: 'bottomright', // position of control inside the map
-        clickableStreetViewLayer: false, // WARNING: when enabled it will violate Google ToS rules
         theme: "leaflet-pegman-v3-default", // or "leaflet-pegman-v3-small"
       });
       pegmanControl.addTo(map);
@@ -67,7 +66,7 @@ _**NB** to be able to use the “pegman” (a.k.a. “Street View Control”) yo
 
 ---
 
-**Compatibile with:** leaflet@1.3.4, gmaps@3.34, leaflet-googlemutant@0.7.0, interactJS@1.2.9
+**Compatibile with:** leaflet@1.3.4, gmaps@3.34, leaflet-googlemutant@0.7.0, interactJS@1.2.8
 
 ---
 
