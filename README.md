@@ -26,7 +26,7 @@ _For a working example (without API Key) see [demo](https://raruto.github.io/exa
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"></script>
     <!-- Leaflet-GoogleMutant -->
-    <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.7.0/Leaflet.GoogleMutant.js"></script>
+    <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.8.0/Leaflet.GoogleMutant.js"></script>
     <!-- Leaflet-Pegman -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-pegman/@latest/leaflet-pegman.css" />
     <script src="https://unpkg.com/leaflet-pegman/@latest/leaflet-pegman.js"></script>
@@ -66,7 +66,7 @@ _**NB** to be able to use the “pegman” (a.k.a. “Street View Control”) yo
 
 ---
 
-**Compatibile with:** leaflet@1.3.4, gmaps@3.34, leaflet-googlemutant@0.7.0, interactJS@1.2.8
+**Compatibile with:** leaflet@1.3.4, gmaps@3.34, leaflet-googlemutant@0.8.0, interactJS@1.2.8
 
 ---
 
