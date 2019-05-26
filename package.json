@@ -1,6 +1,6 @@
 {
   "name": "leaflet-pegman",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A Leaflet plugin that allows easy integration with the Google StreetView Service API",
   "main": "leaflet-pegman.js",
   "scripts": {
