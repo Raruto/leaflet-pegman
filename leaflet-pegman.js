@@ -10,11 +10,18 @@ L.Control.Pegman = L.Control.extend({
   includes: L.Evented ? L.Evented.prototype : L.Mixin.Events,
   options: {
     position: 'bottomright', // position of control inside the map
-    clickableStreetViewLayer: false, // WARNING: when enabled it will violate Google ToS rules
     theme: "leaflet-pegman-v3-default", // or "leaflet-pegman-v3-small"
     logging: false, // enable console logging (debugging),
     apiKey: '',
     libraries: '',
+    mutant: {
+      attribution: 'Map data: &copy; <a href="https://www.google.com/intl/en/help/terms_maps.html">Google</a>',
+      pane: "overlayPane",
+      type: null, // Non-image map type (used to force a transparent background)
+    },
+    pano: {
+      enableCloseButton: true,
+    }
   },
 
   initialize: function(options) {
@@ -29,8 +36,6 @@ L.Control.Pegman = L.Control.extend({
     this._pegmanMarkerCoords = null;
     this._streetViewCoords = null;
     this._streetViewLayerEnabled = false;
-
-    this.options.clickableStreetViewLayer = typeof(L.gridLayer.googleMutant) === "undefined" || this.options.clickableStreetViewLayer;
 
     this._dropzoneMapOpts = {
       accept: '.draggable', // Only Accept Elements Matching this CSS Selector
@@ -70,7 +75,7 @@ L.Control.Pegman = L.Control.extend({
 
     L.DomUtil.addClass(this._map._container, this.options.theme);
 
-		L.DomEvent.disableClickPropagation(this._panoDiv);
+    L.DomEvent.disableClickPropagation(this._panoDiv);
     L.DomEvent.on(this._container, 'click mousedown touchstart dblclick', this._disableClickPropagation, this);
 
     this._container.addEventListener('mousedown', this._loadScripts.bind(this, true), false);
@@ -98,8 +103,6 @@ L.Control.Pegman = L.Control.extend({
     L.DomEvent.off(document, 'mousemove', this.mouseMoveTracking, this);
     L.DomEvent.off(document, 'keyup', this.keyUpTracking, this);
   },
-
-  /* ******************************************************* */
 
   _log: function(args) {
     if (this.options.logging) {
@@ -213,8 +216,6 @@ L.Control.Pegman = L.Control.extend({
     this.fireEvent("svpc_" + action);
   },
 
-  /* ******************************************************* */
-
   onDraggableMove: function(e) {
     this.mouseMoveTracking(e);
     this._updateClasses("pegman-dragging");
@@ -268,8 +269,6 @@ L.Control.Pegman = L.Control.extend({
     this.clear();
   },
 
-  /* ******************************************************* */
-
   clear: function() {
     this.pegmanRemove();
     this.hideStreetViewLayer();
@@ -292,8 +291,6 @@ L.Control.Pegman = L.Control.extend({
     this._pegmanMarker.removeFrom(this._map);
     this._updateClasses("pegman-removed");
   },
-
-  /* ******************************************************* */
 
   closeStreetViewPanorama: function() {
     this._panoDiv.style.display = "none";
@@ -349,8 +346,6 @@ L.Control.Pegman = L.Control.extend({
     }
   },
 
-  /********************************************************/
-
   /**
    * mouseMoveTracking
    * @desc internal function used to style pegman while dragging
@@ -390,198 +385,111 @@ L.Control.Pegman = L.Control.extend({
     }
   },
 
-  /********************************************************/
-
-  /**
-   * MouseTileTracker
-   * @desc internal class used to add cursor:"pointer" when hovering a semi-transparent tiled overlay
-   *
-   * TODO: code refactoring + add support for the GoogleMutant StreetView layer
-   */
-  MouseTileTracker: function(map) {
-
-    var self = this;
-
-    self._init = function(map) {
-      self.map = map;
-      self.mouse = {
-        pageX: 0,
-        pageY: 0
-      };
-
-      if (typeof(Number.prototype.toRad) === "undefined") {
-        Number.prototype.toRad = function() {
-          return this * Math.PI / 180;
-        };
-      }
-
-      self.defaultDraggableCursor = self.map._container.style.cursor;
-
-      self.map._container.addEventListener('mousemove', self.onMapDivMouseMove);
-      self.map.on('mousemove', self.onMapMouseMove);
-    };
-
-    self.getTileURL = function(lat, lon, zoom) {
-      var xtile = parseInt(Math.floor((lon + 180) / 360 * (1 << zoom)));
-      var ytile = parseInt(Math.floor((1 - Math.log(Math.tan(lat.toRad()) + 1 / Math.cos(lat.toRad())) / Math.PI) / 2 * (1 << zoom)));
-      return {
-        x: xtile,
-        y: ytile,
-        z: zoom,
-      };
-    };
-
-    self._startTracking = function(baseUrl, tileCoordinate, tileWidth, tileHeight, subdomain) {
-      subdomain = subdomain || null;
-      self.tileData = null;
-      self.downloadedTile = null;
-      self.tileCanvas = null;
-      self.tileSrc = "";
-
-      self.baseUrl = baseUrl;
-      self.tileCoordinate = tileCoordinate;
-      self.tileWidth = tileWidth;
-      self.tileHeight = tileHeight;
-
-      var protocolsRegex = /(^\w+:|^)\/\//; //eg. http://
-      var subdomainRegex = /.*\{s\}.*\./; //eg. mts{s}.
-      var cssSelectorSrc;
-
-      self.tileSrc = self.baseUrl;
-      self.tileSrc = self.tileSrc.replace("{x}", self.tileCoordinate.x);
-      self.tileSrc = self.tileSrc.replace("{y}", self.tileCoordinate.y);
-      self.tileSrc = self.tileSrc.replace("{z}", self.map.getZoom());
-
-      cssSelectorSrc = self.tileSrc;
-
-      if (subdomain) {
-        self.tileSrc = self.tileSrc.replace("{s}", subdomain);
-      }
-      cssSelectorSrc = cssSelectorSrc.replace(protocolsRegex, '');
-      cssSelectorSrc = cssSelectorSrc.replace(subdomainRegex, '');
-
-      self.downloadTile(self.tileSrc);
-
-      if (!self.tileData) {
-        self.tileLoaded();
-      }
-
-      self.mapTile = document.querySelector('.leaflet-container img[src$="' + cssSelectorSrc + '"]');
-
-      if (!self.mapTile) return;
-
-      self.rect = self.mapTile.getBoundingClientRect();
-
-      self.imgPos = {
-        top: (self.rect.top + window.scrollY).toFixed(0),
-        left: (self.rect.left + window.scrollX).toFixed(0)
-      };
-      self.mousePos = {
-        x: self.mouse.pageX - self.imgPos.left,
-        y: self.mouse.pageY - self.imgPos.top
-      };
-
-      self.pixelData = self.tileCanvas.getContext('2d').getImageData(self.mousePos.x, self.mousePos.y, 1, 1).data;
-      self.alpha = self.pixelData[3];
-
-      self.hasTileData = (self.alpha != 0);
-    };
-
-    self.downloadTile = function(imageSrc) {
-      self.downloadedTile = new Image();
-      self.downloadedTile.crossOrigin = "Anonymous";
-      self.downloadedTile.addEventListener("load", self.tileLoaded, false);
-      self.downloadedTile.src = imageSrc;
-    };
-
-    self.tileLoaded = function() {
-      self.tileCanvas = document.createElement("canvas");
-      self.context = self.tileCanvas.getContext("2d");
-
-      self.tileCanvas.width = self.tileWidth;
-      self.tileCanvas.height = self.tileHeight;
-
-      self.context.drawImage(self.downloadedTile, 0, 0);
-
-      self.tileData = self.context.getImageData(0, 0, self.tileWidth, self.tileHeight);
-    };
-
-    self.onMapDivMouseMove = function(e) {
-      self.mouse.pageX = e.pageX;
-      self.mouse.pageY = e.pageY;
-    };
-
-    self.onMapMouseMove = function(mev) {
-      var TILE_SIZE = 256;
-      var tileCoordinate = self.getTileURL(mev.latlng.lat, mev.latlng.lng, self.map.getZoom());
-      var toggledOverlays = self.map._layers;
-      var mouseTracker, hasTileData = false;
-      var subdomain;
-
-      for (var i in toggledOverlays) {
-        var layer = toggledOverlays[i];
-        if (!layer._url || layer._url.indexOf("google") < 0) { //Some sort of whitelist of pointable layers
-          continue;
-        }
-        if (layer.options && layer.options.subdomains && layer.options.subdomains[0]) {
-          subdomain = layer.options.subdomains[0];
-        } else {
-          subdomain = null;
-        }
-        self._startTracking(layer._url, tileCoordinate, TILE_SIZE, TILE_SIZE, subdomain);
-        if (self.hasTileData) {
-          hasTileData = true;
-        }
-      }
-
-      self.map._container.style.cursor = hasTileData ? 'pointer' : self.defaultDraggableCursor;
-    };
-
-    self._init(map);
-  },
-
   _disableClickPropagation: function(e) {
     L.DomEvent.stopPropagation(e);
     L.DomEvent.preventDefault(e);
   },
 
   _loadGoogleHandlers: function() {
-    if (typeof google !== 'object' || typeof google.maps !== 'object') return;
-    var attribution = 'Map data: &copy; <a href="https://www.google.com/intl/en/help/terms_maps.html">Google</a>';
-    var pane = "overlayPane";
-    if (this.options.clickableStreetViewLayer) {
-      // You SHOULD NOT USE UNDOCUMENTED APIs without google's express permission.
-      // @link https://developers.google.com/terms/api-services-user-data-policy
-      this._googleStreetViewLayer = L.tileLayer('https://{s}.googleapis.com/vt?lyrs=svv&style=40,18&x={x}&y={y}&z={z}', {
-        attribution: attribution,
-        pane: pane,
-        subdomains: ['mts1', 'mts2', 'mts3'],
-      });
-      this._mouseTileTracker = new this.MouseTileTracker(this._map);
-    } else {
-      // GoogleMutant SHOULD PROVIDE a ToS compliant way of loading Google Map's tiles into Leaflet
-      // @link https://gitlab.com/IvanSanchez/Leaflet.GridLayer.GoogleMutant
-      this._googleStreetViewLayer = L.gridLayer.googleMutant({
-        attribution: attribution,
-        pane: pane,
-        //type: null, // (legal?) workaround used to force a transparent background using null maptype_id
-        type: "roadmap",
-        styles: [{
-          "stylers": [{
-            "visibility": "off"
-          }]
-        }]
-      });
-      this._googleStreetViewLayer.addGoogleLayer('StreetViewCoverageLayer');
-    }
+    if (typeof google !== 'object' || typeof google.maps !== 'object' || typeof L.GridLayer.GoogleMutant !== 'function') return;
+    this._initGoogleMaps();
+    this._initMouseTracker();
+  },
 
-    this._panorama = new google.maps.StreetViewPanorama(this._panoDiv, {
-      enableCloseButton: true,
-    });
+  _initGoogleMaps: function() {
+    this._googleStreetViewLayer = L.gridLayer.googleMutant(this.options.mutant);
+    this._googleStreetViewLayer.addGoogleLayer('StreetViewCoverageLayer');
+
+    this._panorama = new google.maps.StreetViewPanorama(this._panoDiv, this.options.pano);
     this._streetViewService = new google.maps.StreetViewService();
 
     google.maps.event.addListener(this._panorama, 'closeclick', L.bind(this.onStreetViewPanoramaClose, this));
+  },
 
+  _initMouseTracker: function() {
+    if (!this._googleStreetViewLayer) return;
+
+    var tileSize = this._googleStreetViewLayer.getTileSize();
+
+    this.tileWidth = tileSize.x;
+    this.tileHeight = tileSize.y;
+
+    this.defaultDraggableCursor = this._map._container.style.cursor;
+
+    this._map.on("mousemove", this._setMouseCursor, this);
+  },
+
+  _setMouseCursor: function(e) {
+    var coords = this._getTileCoords(e.latlng.lat, e.latlng.lng, this._map.getZoom());
+    var img = this._getTileImage(coords);
+    var pixel = this._getTilePixelPoint(img, e.originalEvent);
+    var hasTileData = this._hasTileData(img, pixel);
+    this._map._container.style.cursor = hasTileData ? 'pointer' : this.defaultDraggableCursor;
+  },
+
+  _getTileCoords: function(lat, lon, zoom) {
+    var xtile = parseInt(Math.floor((lon + 180) / 360 * (1 << zoom)));
+    var ytile = parseInt(Math.floor((1 - Math.log(Math.tan(this._toRad(lat)) + 1 / Math.cos(this._toRad(lat))) / Math.PI) / 2 * (1 << zoom)));
+    return {
+      x: xtile,
+      y: ytile,
+      z: zoom,
+    };
+  },
+
+  _getTileImage: function(coords) {
+    if (!this._googleStreetViewLayer || !this._googleStreetViewLayer._tiles) return;
+    var key = this._googleStreetViewLayer._tileCoordsToKey(coords);
+    var tile = this._googleStreetViewLayer._tiles[key];
+    if (!tile) return;
+    var img = tile.el.querySelector('img');
+    if (!img) return;
+    this._downloadTile(img.src, this._tileLoaded); // crossOrigin = "Anonymous"
+    return img;
+  },
+
+  _getTilePixelPoint: function(img, e) {
+    if (!img) return;
+    var imgRect = img.getBoundingClientRect();
+    var imgPos = {
+      pageY: (imgRect.top + window.scrollY).toFixed(0),
+      pageX: (imgRect.left + window.scrollX).toFixed(0)
+    };
+    var mousePos = {
+      x: e.pageX - imgPos.pageX,
+      y: e.pageY - imgPos.pageY
+    };
+    return mousePos;
+  },
+
+  _hasTileData: function(img, pixelPoint) {
+    if (!this.tileContext || !pixelPoint) return;
+    var pixelData = this.tileContext.getImageData(pixelPoint.x, pixelPoint.y, 1, 1).data;
+    var alpha = pixelData[3];
+    var hasTileData = (alpha != 0);
+    return hasTileData;
+  },
+
+  _toRad: function(number) {
+    return number * Math.PI / 180;
+  },
+
+  _downloadTile: function(imageSrc, callback) {
+    if (!imageSrc) return;
+    img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.addEventListener("load", callback.bind(this, img), false);
+    img.src = imageSrc;
+  },
+
+  _tileLoaded: function(img) {
+    this.tileCanvas = document.createElement("canvas");
+    this.tileContext = this.tileCanvas.getContext("2d");
+
+    this.tileCanvas.width = this.tileWidth;
+    this.tileCanvas.height = this.tileHeight;
+
+    this.tileContext.drawImage(img, 0, 0);
   },
 
   _loadInteractHandlers: function() {
@@ -609,14 +517,23 @@ L.Control.Pegman = L.Control.extend({
     }
 
     if (typeof google !== 'object' || typeof google.maps !== 'object') {
-      var apiKey = this.options.apiKey || '';
-      var libraries = this.options.libraries || ''; //places,drawing,geometry
-      var g_url = 'https://maps.googleapis.com/maps/api/js?v=3' /*.exp*/ +
-        '&key=' + apiKey +
-        '&libraries=' + libraries +
+      var g_url = 'https://maps.googleapis.com/maps/api/js?v=3' +
+        '&key=' + this.options.apiKey +
+        '&libraries=' + this.options.libraries +
         '&callback=?';
       this._loadJS(g_url, function() {
         this._log("gmaps.js loaded");
+        this._loadGoogleHandlers();
+        if (toggleStreetView) {
+          this.toggleStreetViewLayer();
+        }
+      }.bind(this));
+    }
+
+    if (typeof L.GridLayer.GoogleMutant !== 'function') {
+      var m_url = 'https://unpkg.com/leaflet.gridlayer.googlemutant@0.8.0/Leaflet.GoogleMutant.js';
+      this._loadJS(m_url, function() {
+        this._log("Leaflet.GoogleMutant.js loaded");
         this._loadGoogleHandlers();
         if (toggleStreetView) {
           this.toggleStreetViewLayer();
