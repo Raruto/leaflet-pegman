@@ -9,9 +9,9 @@
 L.Control.Pegman = L.Control.extend({
   includes: L.Evented ? L.Evented.prototype : L.Mixin.Events,
   options: {
-    position: 'bottomright', // position of control inside the map
+    position: 'bottomright',
     theme: "leaflet-pegman-v3-default", // or "leaflet-pegman-v3-small"
-    logging: false, // enable console logging (debugging),
+    debug: false,
     apiKey: '',
     libraries: '',
     mutant: {
@@ -24,7 +24,14 @@ L.Control.Pegman = L.Control.extend({
     }
   },
 
+  __interactURL: 'https://unpkg.com/interactjs@1.2.9/dist/interact.min.js',
+  __gmapsURL: 'https://maps.googleapis.com/maps/api/js?v=3',
+  __mutantURL: 'https://unpkg.com/leaflet.gridlayer.googlemutant@0.8.0/Leaflet.GoogleMutant.js',
+
   initialize: function(options) {
+
+    if (typeof options.logging !== "undefined") options.debug = options.logging;
+
     L.Util.setOptions(this, options);
 
     // Grab Left/Right/Up/Down Direction of Mouse for Pegman Image
@@ -76,9 +83,11 @@ L.Control.Pegman = L.Control.extend({
     L.DomUtil.addClass(this._map._container, this.options.theme);
 
     L.DomEvent.disableClickPropagation(this._panoDiv);
-    L.DomEvent.on(this._container, 'click mousedown touchstart dblclick', this._disableClickPropagation, this);
+    // L.DomEvent.on(this._container, 'click mousedown touchstart dblclick', this._disableClickPropagation, this);
+    L.DomEvent.on(this._container, 'click mousedown dblclick', this._disableClickPropagation, this);
 
     this._container.addEventListener('mousedown', this._loadScripts.bind(this, true), false);
+    this._container.addEventListener('touchstart', this._loadScripts.bind(this, true), false);
     this._container.addEventListener('mouseover', this._loadScripts.bind(this, false), false);
 
     this._loadInteractHandlers();
@@ -105,7 +114,7 @@ L.Control.Pegman = L.Control.extend({
   },
 
   _log: function(args) {
-    if (this.options.logging) {
+    if (this.options.debug) {
       console.log(args);
     }
   },
@@ -218,6 +227,7 @@ L.Control.Pegman = L.Control.extend({
 
   onDraggableMove: function(e) {
     this.mouseMoveTracking(e);
+    this.pegmanRemove();
     this._updateClasses("pegman-dragging");
     this._translateElement(this._pegman, e.dx, e.dy);
   },
@@ -278,6 +288,7 @@ L.Control.Pegman = L.Control.extend({
   toggleStreetViewLayer: function(e) {
     if (this._streetViewLayerEnabled) this.clear();
     else this.showStreetViewLayer();
+    this._log("streetview-layer-toggled");
   },
 
   pegmanAdd: function() {
@@ -476,7 +487,7 @@ L.Control.Pegman = L.Control.extend({
 
   _downloadTile: function(imageSrc, callback) {
     if (!imageSrc) return;
-    img = new Image();
+    var img = new Image();
     img.crossOrigin = "Anonymous";
     img.addEventListener("load", callback.bind(this, img), false);
     img.src = imageSrc;
@@ -493,7 +504,12 @@ L.Control.Pegman = L.Control.extend({
   },
 
   _loadInteractHandlers: function() {
+    // TODO: trying to replace "interact.js" with default "L.Draggable" object
+    // var draggable = new L.Draggable(this._container);
+    // draggable.enable();
+    // draggable.on('drag', function(e) { console.log(e); });
     if (typeof interact !== 'function') return;
+
     // Enable Draggable Element to be Dropped into Map Container
     this._draggable = interact(this._pegman).draggable(this._draggableMarkerOpts);
     this._dropzone = interact(this._map._container).dropzone(this._dropzoneMapOpts);
@@ -502,6 +518,15 @@ L.Control.Pegman = L.Control.extend({
 
     // Toggle on/off SV Layer on Pegman's Container single clicks
     interact(this._container).on("tap", L.bind(this.toggleStreetViewLayer, this));
+
+    // Prevent map drags (Desktop / Mobile) while dragging pegman control
+    L.DomEvent.on(this._container, "touchstart", function(e) {
+      this._map.dragging.disable();
+    }, this);
+    L.DomEvent.on(this._container, "touchend", function(e) {
+      this._map.dragging.enable();
+    }, this);
+
   },
 
   _loadScripts: function(toggleStreetView) {
@@ -509,7 +534,7 @@ L.Control.Pegman = L.Control.extend({
     this._lazyLoaderAdded = true;
 
     if (typeof interact !== 'function') {
-      var i_url = 'https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.2.9/interact.min.js';
+      var i_url = this.__interactURL;
       this._loadJS(i_url, function() {
         this._log("interact.js loaded");
         this._loadInteractHandlers();
@@ -517,7 +542,7 @@ L.Control.Pegman = L.Control.extend({
     }
 
     if (typeof google !== 'object' || typeof google.maps !== 'object') {
-      var g_url = 'https://maps.googleapis.com/maps/api/js?v=3' +
+      var g_url = this.__gmapsURL +
         '&key=' + this.options.apiKey +
         '&libraries=' + this.options.libraries +
         '&callback=?';
@@ -531,7 +556,7 @@ L.Control.Pegman = L.Control.extend({
     }
 
     if (typeof L.GridLayer.GoogleMutant !== 'function') {
-      var m_url = 'https://unpkg.com/leaflet.gridlayer.googlemutant@0.8.0/Leaflet.GoogleMutant.js';
+      var m_url = this.__mutantURL;
       this._loadJS(m_url, function() {
         this._log("Leaflet.GoogleMutant.js loaded");
         this._loadGoogleHandlers();
@@ -548,7 +573,11 @@ L.Control.Pegman = L.Control.extend({
     } else {
       var script = document.createElement('script');
       script.src = url;
-      script.onload = script.onreadystatechange = callback;
+      var loaded = function() {
+        script.onload = script.onreadystatechange = null;
+        callback();
+      };
+      script.onload = script.onreadystatechange = loaded;
 
       var head = document.head || document.getElementsByTagName('head')[0] || document.documentElement;
       head.insertBefore(script, head.firstChild);
@@ -577,8 +606,7 @@ L.Control.Pegman = L.Control.extend({
     } else {
       script.src = url + query + 'callback=' + jsonp;
     }
-    script.async = true;
-    script.onload = script.onreadystatechange = function() {
+    var loaded = function() {
       if (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete') {
         script.onload = script.onreadystatechange = null;
         if (script && script.parentNode) {
@@ -586,6 +614,8 @@ L.Control.Pegman = L.Control.extend({
         }
       }
     };
+    script.async = true;
+    script.onload = script.onreadystatechange = loaded;
     var head = document.head || document.getElementsByTagName('head')[0] || document.documentElement;
     // Use insertBefore instead of appendChild to circumvent an IE6 bug.
     // This arises when a base node is used.
