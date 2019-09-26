@@ -86,9 +86,10 @@ L.Control.Pegman = L.Control.extend({
     // L.DomEvent.on(this._container, 'click mousedown touchstart dblclick', this._disableClickPropagation, this);
     L.DomEvent.on(this._container, 'click mousedown dblclick', this._disableClickPropagation, this);
 
-    this._container.addEventListener('mousedown', this._loadScripts.bind(this, true), false);
-    this._container.addEventListener('touchstart', this._loadScripts.bind(this, true), false);
-    this._container.addEventListener('mouseover', this._loadScripts.bind(this, false), false);
+    this._container.addEventListener('touchstart', this._loadScripts.bind(this, !L.Browser.touch), { once: true });
+    this._container.addEventListener('mousedown', this._loadScripts.bind(this, true), { once: true });
+    this._container.addEventListener('mouseover', this._loadScripts.bind(this, false), { once: true });
+
 
     this._loadInteractHandlers();
     this._loadGoogleHandlers();
@@ -221,8 +222,7 @@ L.Control.Pegman = L.Control.extend({
       default:
         throw "Unhandled event:" + action;
     }
-    this._log(action);
-    this.fireEvent("svpc_" + action);
+    this.fire("svpc_" + action);
   },
 
   onDraggableMove: function(e) {
@@ -352,7 +352,7 @@ L.Control.Pegman = L.Control.extend({
       });
       this._panorama.setVisible(true);
     } else {
-      this._log("Street View data not found for this location.");
+      console.warn("Street View data not found for this location.");
       // this.clear(); // TODO: add a visual feedback when no SV data available
     }
   },
@@ -401,13 +401,13 @@ L.Control.Pegman = L.Control.extend({
     L.DomEvent.preventDefault(e);
   },
 
-  _loadGoogleHandlers: function() {
+  _loadGoogleHandlers: function(toggleStreetView) {
     if (typeof google !== 'object' || typeof google.maps !== 'object' || typeof L.GridLayer.GoogleMutant !== 'function') return;
-    this._initGoogleMaps();
+    this._initGoogleMaps(toggleStreetView);
     this._initMouseTracker();
   },
 
-  _initGoogleMaps: function() {
+  _initGoogleMaps: function(toggleStreetView) {
     this._googleStreetViewLayer = L.gridLayer.googleMutant(this.options.mutant);
     this._googleStreetViewLayer.addGoogleLayer('StreetViewCoverageLayer');
 
@@ -415,6 +415,10 @@ L.Control.Pegman = L.Control.extend({
     this._streetViewService = new google.maps.StreetViewService();
 
     google.maps.event.addListener(this._panorama, 'closeclick', L.bind(this.onStreetViewPanoramaClose, this));
+
+    if (toggleStreetView) {
+      this.showStreetViewLayer();
+    }
   },
 
   _initMouseTracker: function() {
@@ -520,54 +524,25 @@ L.Control.Pegman = L.Control.extend({
     interact(this._container).on("tap", L.bind(this.toggleStreetViewLayer, this));
 
     // Prevent map drags (Desktop / Mobile) while dragging pegman control
-    L.DomEvent.on(this._container, "touchstart", function(e) {
-      this._map.dragging.disable();
-    }, this);
-    L.DomEvent.on(this._container, "touchend", function(e) {
-      this._map.dragging.enable();
-    }, this);
-
+    L.DomEvent.on(this._container, "touchstart", function(e) { this._map.dragging.disable(); }, this);
+    L.DomEvent.on(this._container, "touchend", function(e) { this._map.dragging.enable(); }, this);
   },
 
   _loadScripts: function(toggleStreetView) {
     if (this._lazyLoaderAdded) return;
     this._lazyLoaderAdded = true;
 
-    if (typeof interact !== 'function') {
-      var i_url = this.__interactURL;
-      this._loadJS(i_url, function() {
-        this._log("interact.js loaded");
-        this._loadInteractHandlers();
-      }.bind(this));
-    }
+    this._loadJS(this.__interactURL, this._loadInteractHandlers.bind(this), typeof interact !== 'function');
+    this._loadJS(this.__gmapsURL + '&key=' + this.options.apiKey + '&libraries=' + this.options.libraries + '&callback=?', this._loadGoogleHandlers.bind(this, toggleStreetView), typeof google !== 'object' || typeof google.maps !== 'object');
+    this._loadJS(this.__mutantURL, this._loadGoogleHandlers.bind(this, toggleStreetView), typeof L.GridLayer.GoogleMutant !== 'function');
 
-    if (typeof google !== 'object' || typeof google.maps !== 'object') {
-      var g_url = this.__gmapsURL +
-        '&key=' + this.options.apiKey +
-        '&libraries=' + this.options.libraries +
-        '&callback=?';
-      this._loadJS(g_url, function() {
-        this._log("gmaps.js loaded");
-        this._loadGoogleHandlers();
-        if (toggleStreetView) {
-          this.toggleStreetViewLayer();
-        }
-      }.bind(this));
-    }
-
-    if (typeof L.GridLayer.GoogleMutant !== 'function') {
-      var m_url = this.__mutantURL;
-      this._loadJS(m_url, function() {
-        this._log("Leaflet.GoogleMutant.js loaded");
-        this._loadGoogleHandlers();
-        if (toggleStreetView) {
-          this.toggleStreetViewLayer();
-        }
-      }.bind(this));
-    }
   },
 
-  _loadJS: function(url, callback) {
+  _loadJS: function(url, callback, condition) {
+    if (!condition) {
+      callback();
+      return;
+    }
     if (url.indexOf('callback=?') !== -1) {
       this._jsonp(url, callback);
     } else {
@@ -575,8 +550,9 @@ L.Control.Pegman = L.Control.extend({
       script.src = url;
       var loaded = function() {
         script.onload = script.onreadystatechange = null;
+        this._log(url + " loaded");
         callback();
-      };
+      }.bind(this);
       script.onload = script.onreadystatechange = loaded;
 
       var head = document.head || document.getElementsByTagName('head')[0] || document.documentElement;
