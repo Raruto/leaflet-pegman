@@ -106,8 +106,8 @@ L.Control.Pegman = L.Control.extend({
 	},
 
 	onRemove: function(map) {
-		this._googleStreetViewLayer.remove();
-		this._pegmanMarker.remove();
+		if (this._googleStreetViewLayer) this._googleStreetViewLayer.remove();
+		if (this._pegmanMarker) this._pegmanMarker.remove();
 
 		L.DomUtil.remove(this._panoDiv);
 
