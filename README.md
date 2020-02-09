@@ -1,7 +1,7 @@
 # leaflet-pegman.js
 A Leaflet plugin that allows easy integration with the Google StreetView Service API
 
-_For a working example (without API Key) see [demo](https://raruto.github.io/examples/leaflet-pegman/leaflet-pegman.html) and [demo](https://raruto.github.io/examples/leaflet-pegman/leaflet-pegman-lazyLoading.html)_
+_For a working example (without API Key) see [demo](https://raruto.github.io/leaflet-pegman/examples/leaflet-pegman.html) and [demo](https://raruto.github.io/leaflet-pegman/examples/leaflet-pegman-lazyLoading.html)_
 
 ---
 
