@@ -66,7 +66,7 @@ _**NB** to be able to use the “pegman” (a.k.a. “Street View Control”) yo
 
 ---
 
-**Compatibile with:** leaflet@1.3.4, gmaps@3.34, leaflet-googlemutant@0.8.0, interactJS@1.2.8
+**Compatibile with:** leaflet@1.6.0, gmaps@3.34, leaflet-googlemutant@0.8.0, interactJS@1.2.9
 
 ---
 
