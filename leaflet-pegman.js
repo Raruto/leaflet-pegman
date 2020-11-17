@@ -101,7 +101,7 @@ L.Control.Pegman = L.Control.extend({
 		this._pegmanMarker.on("dragend", this.onPegmanMarkerDragged, this);
 		this._map.on("click", this.onMapClick, this);
 		this._map.on("layeradd", this.onMapLayerAdd, this);
-
+		this.fire("add_pegman");
 		return this._container;
 	},
 
@@ -269,7 +269,7 @@ L.Control.Pegman = L.Control.extend({
 	},
 
 	onMapClick: function(e) {
-		if (this._streetViewLayerEnabled)
+		if (this._streetViewLayerEnabled && !this.options.panoDivDialogUI)
 			this.findStreetViewData(e.latlng.lat, e.latlng.lng);
 	},
 
@@ -308,10 +308,12 @@ L.Control.Pegman = L.Control.extend({
 
 	closeStreetViewPanorama: function() {
 		this._panoDiv.style.display = "none";
+		this.fire("close_panorama");
 	},
 
 	openStreetViewPanorama: function() {
 		this._panoDiv.style.display = "block";
+		this.fire("open_panorama");
 	},
 
 	hideStreetViewLayer: function() {
@@ -536,7 +538,7 @@ L.Control.Pegman = L.Control.extend({
 		this._lazyLoaderAdded = true;
 
 		this._loadJS(this.__interactURL, this._loadInteractHandlers.bind(this), typeof interact !== 'function');
-		this._loadJS(this.__gmapsURL + '&key=' + this.options.apiKey + '&libraries=' + this.options.libraries + '&callback=?', this._loadGoogleHandlers.bind(this, toggleStreetView), typeof google !== 'object' || typeof google.maps !== 'object');
+		//this._loadJS(this.__gmapsURL + '&key=' + this.options.apiKey + '&libraries=' + this.options.libraries + '&callback=?', this._loadGoogleHandlers.bind(this, toggleStreetView), typeof google !== 'object' || typeof google.maps !== 'object');
 		this._loadJS(this.__mutantURL, this._loadGoogleHandlers.bind(this, toggleStreetView), typeof L.GridLayer.GoogleMutant !== 'function');
 
 	},
@@ -601,6 +603,121 @@ L.Control.Pegman = L.Control.extend({
 		head.insertBefore(script, head.firstChild);
 	},
 
+});
+
+L.Control.Pegman.addInitHook(function(){
+	if (!this.options.panoDivDialogUI) return;
+	let _this = this
+	let _divDialog = (this.options.panoDivDialog) ? this.options.panoDivDialog : L.DomUtil.create('div', '');
+	
+	//TODO AutoLoad JQ & JQ.UI.dialog (https://github.com/jquery/jquery-ui) if not exist
+	if(jQuery) {
+		if(!jQuery.ui) {
+			alert("jQuery UI not loaded");
+			return;
+		}
+	}else{
+		alert("jQuery not loaded");
+		return;
+	}
+	
+	jQuery.noConflict();
+	(function($) {
+		$(function() {
+			let classStart = _this.options.panoDivDialogClass || 'pano-dialog';
+			let classImportant = _this.options.panoDivDialogClass2 || 'pano-dialog-imp';
+			let panodialog = $(_divDialog).dialog({
+				title: L._("Google Street View"),
+				dialogClass: classStart,
+				autoOpen: false,
+				height: 450,
+				width: 650,
+				//minWidth: 500,
+				//minHeight: 400,
+				position: {my:"left top", at:"left+20 top+20", of:window },
+				close: function(event, ui) {
+					_this.clear();
+					panodialog.dialog( "option", "classes.ui-dialog", classStart );
+				},
+				resizeStop: function( event, ui ) {
+					google.maps.event.trigger(_this._panorama, 'resize');
+					panodialog.dialog( "option", "classes.ui-dialog", classImportant );
+				}
+			});	
+			
+			$(_this).on("add_pegman", function() {
+				$(_this._panoDiv).css({'width':'auto', 'height':'auto'});
+				_divDialog.append(_this._panoDiv);
+			});
+			
+			$(_this).on("open_panorama", function() {
+				panodialog.dialog("open");
+				
+				_this._panorama.addListener("position_changed", () => {
+					let newpos = {
+						lat: _this._panorama.getPosition().lat(),
+						lng: _this._panorama.getPosition().lng()
+					}
+					_this._pegmanMarker.setLatLng(newpos);
+				});
+				
+				_this._panorama.addListener("pov_changed", () => {
+					let pos = _this._panorama.getPov().heading;
+					//_this._panorama.getPov().pitch; //vertical position
+					_this._pegmanMarker.getElement().style.backgroundPosition = getPosition(pos);
+				});
+				
+				var newPegIcon = L.divIcon({
+					iconSize:    [46, 46],
+					iconAnchor:  [23, 46],
+					className: 	"peg-marker",
+				});
+				_this._pegmanMarker.setIcon(newPegIcon);
+			});
+			
+			$(_this).on("close_panorama", function() {
+				panodialog.dialog("close");
+			});
+		});
+	})(jQuery);
+	
+	var iconPos;
+	function getPosition(pos){
+		if(pos >= 0 && pos < 22.5 || pos == 360){
+			iconPos = "0 0";
+		}else if(pos >= 22.5 && pos < 45){
+			iconPos = "0 -52px";
+		}else if(pos >= 45  && pos < 67.5){
+			iconPos = "0 -104px";
+		}else if(pos >= 67.5 && pos < 90){
+			iconPos = "0 -156px";
+		}else if(pos >= 90 && pos < 112.5){
+			iconPos = "0 -208px";
+		}else if(pos >= 112 && pos < 135){
+			iconPos = "0 -260px";
+		}else if(pos >= 135 && pos < 157.5){
+			iconPos = "0 -312px";
+		}else if(pos >= 157.5 && pos < 180){
+			iconPos = "0 -364px";
+		}else if(pos >= 180 && pos < 202.5){
+			iconPos = "0 -416px";
+		}else if(pos >= 202.5 && pos < 225){
+			iconPos = "0 -468px";
+		}else if(pos >= 225 && pos < 247.5){
+			iconPos = "0 -520px";
+		}else if(pos >= 247.5 && pos < 270){
+			iconPos = "0 -572px";
+		}else if(pos >= 270 && pos < 292.5){
+			iconPos = "0 -624px";
+		}else if(pos >= 292.5 && pos < 315){
+			iconPos = "0 -676px";
+		}else if(pos >= 315 && pos < 337.5){
+			iconPos = "0 -728px";
+		}else if(pos >= 337.5 && pos < 360){
+			iconPos = "0 -780px";
+		}
+		return iconPos;
+	}
 });
 
 L.control.pegman = function(options) {

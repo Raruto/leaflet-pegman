@@ -1,3 +1,32 @@
+.pano-dialog{
+	z-index: 3000;
+	height: auto;
+	width: auto;
+}
+
+.pano-dialog-imp{
+	z-index: 3000;
+	height: auto !important;
+	width: auto !important;
+}
+
+.pano-dialog .ui-widget-header {
+    border: 1px solid #2c4359;
+    background: #6c757d;
+    color: #e1e463;
+    font-weight: bold;
+}
+
+.peg-marker {
+  background: url("maps.gstatic.com/api-3/cb_scout5.png") no-repeat 0 0;
+  width: 46px;
+  height: 46px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+}
+
 .pano-canvas {
 	position: absolute !important;
 	width: 100%;
