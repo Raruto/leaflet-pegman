@@ -21,12 +21,14 @@ L.Control.Pegman = L.Control.extend({
 		},
 		pano: {
 			enableCloseButton: true,
+			fullscreenControl: false,
+			imageDateControl: true
 		}
 	},
 
 	__interactURL: 'https://unpkg.com/interactjs@1.2.9/dist/interact.min.js',
 	__gmapsURL: 'https://maps.googleapis.com/maps/api/js?v=3',
-	__mutantURL: 'https://unpkg.com/leaflet.gridlayer.googlemutant@0.8.0/Leaflet.GoogleMutant.js',
+	__mutantURL: 'https://unpkg.com/leaflet.gridlayer.googlemutant@0.10.0/Leaflet.GoogleMutant.js',
 
 	initialize: function(options) {
 
@@ -90,7 +92,6 @@ L.Control.Pegman = L.Control.extend({
 		this._container.addEventListener('touchstart', this._loadScripts.bind(this, !L.Browser.touch), { once: true });
 		this._container.addEventListener('mousedown', this._loadScripts.bind(this, true), { once: true });
 		this._container.addEventListener('mouseover', this._loadScripts.bind(this, false), { once: true });
-
 
 		this._loadInteractHandlers();
 		this._loadGoogleHandlers();
@@ -238,6 +239,7 @@ L.Control.Pegman = L.Control.extend({
 	onDraggableEnd: function(e) {
 		this._pegmanMarkerCoords = this._map.mouseEventToLatLng(e);
 		this.pegmanAdd();
+		this.findStreetViewData(this._pegmanMarkerCoords.lat, this._pegmanMarkerCoords.lng);
 		this._updateClasses("pegman-dragged");
 	},
 
@@ -269,8 +271,9 @@ L.Control.Pegman = L.Control.extend({
 	},
 
 	onMapClick: function(e) {
-		if (this._streetViewLayerEnabled)
+		if (this._streetViewLayerEnabled) {
 			this.findStreetViewData(e.latlng.lat, e.latlng.lng);
+		}
 	},
 
 	onMapLayerAdd: function(e) {
@@ -280,6 +283,54 @@ L.Control.Pegman = L.Control.extend({
 
 	onStreetViewPanoramaClose: function() {
 		this.clear();
+	},
+
+	onPanoramaChangeView: function() {
+		var pos = this._panorama.getPosition();
+		var pov = this._panorama.getPov();
+		if (!pos || !pov) return;
+		pos = L.latLng(pos.lat(), pos.lng());
+		h = pov.heading;
+		if (this._map && !this._map.getBounds().pad(-0.05).contains(pos)) {
+			this._map.panTo(pos);
+		}
+		var iconPos;
+		if (h >= 0 && h < 22.5 || h == 360) {
+			iconPos = "0 0";
+		} else if (h >= 22.5 && h < 45) {
+			iconPos = "0 -52px";
+		} else if (h >= 45 && h < 67.5) {
+			iconPos = "0 -104px";
+		} else if (h >= 67.5 && h < 90) {
+			iconPos = "0 -156px";
+		} else if (h >= 90 && h < 112.5) {
+			iconPos = "0 -208px";
+		} else if (h >= 112 && h < 135) {
+			iconPos = "0 -260px";
+		} else if (h >= 135 && h < 157.5) {
+			iconPos = "0 -312px";
+		} else if (h >= 157.5 && h < 180) {
+			iconPos = "0 -364px";
+		} else if (h >= 180 && h < 202.5) {
+			iconPos = "0 -416px";
+		} else if (h >= 202.5 && h < 225) {
+			iconPos = "0 -468px";
+		} else if (h >= 225 && h < 247.5) {
+			iconPos = "0 -520px";
+		} else if (h >= 247.5 && h < 270) {
+			iconPos = "0 -572px";
+		} else if (h >= 270 && h < 292.5) {
+			iconPos = "0 -624px";
+		} else if (h >= 292.5 && h < 315) {
+			iconPos = "0 -676px";
+		} else if (h >= 315 && h < 337.5) {
+			iconPos = "0 -728px";
+		} else if (h >= 337.5 && h < 360) {
+			iconPos = "0 -780px";
+		}
+		this._pegmanMarker.setLatLng(pos);
+		this._pegmanMarker.getElement().style.backgroundPosition = iconPos;
+		this.fire('svpc_change', { latlng: pos, heading: pov.heading, zoom: pov.zoom, pitch: pov.pitch });
 	},
 
 	clear: function() {
@@ -331,17 +382,33 @@ L.Control.Pegman = L.Control.extend({
 	},
 
 	findStreetViewData: function(lat, lng) {
+		if (typeof google === 'undefined') {
+			this._loadScripts(true)
+			return this.once('svpc_streetview-shown', L.bind(this.findStreetViewData, this, lat, lng));
+		}
+
+		if (!this._pegmanMarker._map && this._map) {
+			this._pegmanMarkerCoords = L.latLng(lat, lng);
+			return this.pegmanAdd();
+		}
+
+		var searchRadiusPx = 24,
+			latlng = L.latLng(lat, lng),
+			p = this._map.project(latlng).add([searchRadiusPx, 0]),
+			searchRadiusMeters = latlng.distanceTo(this._map.unproject(p));
+
 		this._streetViewCoords = new google.maps.LatLng(lat, lng);
-		var zoom = this._map.getZoom();
-		var searchRadius = 100;
 
-		if (zoom < 6) searchRadius = 5000;
-		else if (zoom < 10) searchRadius = 500;
-		else if (zoom < 15) searchRadius = 250;
-		else if (zoom >= 17) searchRadius = 50;
-		else searchRadius = 100;
+		// var zoom = this._map.getZoom();
+		// var searchRadius = 100;
+		//
+		// if (zoom < 6) searchRadius = 5000;
+		// else if (zoom < 10) searchRadius = 500;
+		// else if (zoom < 15) searchRadius = 250;
+		// else if (zoom >= 17) searchRadius = 50;
+		// else searchRadius = 100;
 
-		this._streetViewService.getPanoramaByLocation(this._streetViewCoords, searchRadius, L.bind(this.processStreetViewServiceData, this));
+		this._streetViewService.getPanoramaByLocation(this._streetViewCoords, searchRadiusMeters, L.bind(this.processStreetViewServiceData, this));
 	},
 
 	processStreetViewServiceData: function(data, status) {
@@ -417,7 +484,9 @@ L.Control.Pegman = L.Control.extend({
 		this._panorama = new google.maps.StreetViewPanorama(this._panoDiv, this.options.pano);
 		this._streetViewService = new google.maps.StreetViewService();
 
-		google.maps.event.addListener(this._panorama, 'closeclick', L.bind(this.onStreetViewPanoramaClose, this));
+		this._panorama.addListener('closeclick', L.bind(this.onStreetViewPanoramaClose, this));
+		this._panorama.addListener('position_changed', L.bind(this.onPanoramaChangeView, this));
+		this._panorama.addListener('pov_changed', L.bind(this.onPanoramaChangeView, this));
 
 		if (toggleStreetView) {
 			this.showStreetViewLayer();

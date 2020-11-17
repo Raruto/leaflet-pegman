@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>leaflet-pegman.js</title>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- Google Maps API -->
+	<!-- <script src="https://maps.googleapis.com/maps/api/js?key="></script> -->
+
+	<!-- interact.js -->
+	<!-- <script src="https://unpkg.com/interactjs@1.2.9/dist/interact.min.js"></script> -->
+
+	<!-- Leaflet (JS/CSS) -->
+	<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" /> -->
+	<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet-src.js"></script>
+	<script src="https://unpkg.com/leaflet-ui@0.4.6/dist/leaflet-ui.js"></script>
+
+	<!-- Leaflet-GoogleMutant -->
+	<!-- <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.8.0/Leaflet.GoogleMutant.js"></script> -->
+
+	<!-- Leaflet-Pegman -->
+	<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet-pegman@0.1.5/leaflet-pegman.css" />
+	<script src="https://unpkg.com/leaflet-pegman@0.1.5/leaflet-pegman.js"></script> -->
+
+	<link rel="stylesheet" href="../leaflet-pegman.css" />
+	<script src="../leaflet-pegman.js"></script>
+
+	<style>
+		html,
+		body,
+		.map,
+		.panorama {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			height: 100%;
+		}
+
+		.map,
+		.panorama {
+			height: 50%;
+			position: relative !important;
+		}
+	</style>
+	<style>
+		/* Fixes Google Mutant Empty attribution */
+		.leaflet-bottom.leaflet-left,
+		.leaflet-bottom.leaflet-right {
+			margin-bottom: initial !important;
+		}
+
+		/* Make Google Logo/ToS/Feedback links clickable */
+		.leaflet-google-mutant a,
+		.leaflet-google-mutant button {
+			pointer-events: auto;
+		}
+
+		/* Move Google ToS/Feedback to the top */
+		.leaflet-google-mutant .gmnoprint,
+		.leaflet-google-mutant .gm-style-cc {
+			top: 0;
+			bottom: auto !important;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div id="map" class="map"></div>
+	<div id="panorama" class="panorama"></div>
+
+	<script>
+		var map = L.map('map', {
+			center: [45, 9.5],
+			zoom: 5,
+			mapTypeId: 'topo',
+			pegmanControl: false,
+			printControl: false,
+			searchControl: false,
+			layersControl: false,
+			minimapControl: false,
+			locateControl: false,
+			zoomControl: {
+				position: 'topleft'
+			},
+			resizerControl: {
+				direction: 's'
+			},
+			gestureHandling: false,
+		});
+		var pegmanControl;
+		map.on('plugins_loaded', function() {
+			pegmanControl = new L.Control.Pegman({
+				// apiKey: '',
+				position: 'bottomright', // position of control inside the map
+				theme: "leaflet-pegman-v3-default", // or "leaflet-pegman-v3-small"
+				panoDiv: '#panorama'
+			});
+			pegmanControl.addTo(map);
+			// pegmanControl.options.apiKey = '';
+			pegmanControl.findStreetViewData( 46.0281487537794, 3.614544507920941 );
+		});
+	</script>
+
+	<a href="https://github.com/Raruto/leaflet-pegman" class="view-on-github" style="position: fixed;top: 10px;left: calc(50% - 60px);z-index: 9999;"> <img alt="View on Github" src="https://raruto.github.io/img/view-on-github.png" title="View on Github"
+		 width="163"> </a>
+
+</body>
+
+</html>
