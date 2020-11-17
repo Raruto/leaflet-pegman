@@ -290,46 +290,11 @@ L.Control.Pegman = L.Control.extend({
 		var pov = this._panorama.getPov();
 		if (!pos || !pov) return;
 		pos = L.latLng(pos.lat(), pos.lng());
-		h = pov.heading;
 		if (this._map && !this._map.getBounds().pad(-0.05).contains(pos)) {
 			this._map.panTo(pos);
 		}
-		var iconPos;
-		if (h >= 0 && h < 22.5 || h == 360) {
-			iconPos = "0 0";
-		} else if (h >= 22.5 && h < 45) {
-			iconPos = "0 -52px";
-		} else if (h >= 45 && h < 67.5) {
-			iconPos = "0 -104px";
-		} else if (h >= 67.5 && h < 90) {
-			iconPos = "0 -156px";
-		} else if (h >= 90 && h < 112.5) {
-			iconPos = "0 -208px";
-		} else if (h >= 112 && h < 135) {
-			iconPos = "0 -260px";
-		} else if (h >= 135 && h < 157.5) {
-			iconPos = "0 -312px";
-		} else if (h >= 157.5 && h < 180) {
-			iconPos = "0 -364px";
-		} else if (h >= 180 && h < 202.5) {
-			iconPos = "0 -416px";
-		} else if (h >= 202.5 && h < 225) {
-			iconPos = "0 -468px";
-		} else if (h >= 225 && h < 247.5) {
-			iconPos = "0 -520px";
-		} else if (h >= 247.5 && h < 270) {
-			iconPos = "0 -572px";
-		} else if (h >= 270 && h < 292.5) {
-			iconPos = "0 -624px";
-		} else if (h >= 292.5 && h < 315) {
-			iconPos = "0 -676px";
-		} else if (h >= 315 && h < 337.5) {
-			iconPos = "0 -728px";
-		} else if (h >= 337.5 && h < 360) {
-			iconPos = "0 -780px";
-		}
 		this._pegmanMarker.setLatLng(pos);
-		this._pegmanMarker.getElement().style.backgroundPosition = iconPos;
+		this._pegmanMarker.getElement().style.backgroundPosition = "0 " + -Math.abs((Math.round(pov.heading / (360 / 16)) % 16) * Math.round(835 / 16)) + 'px'; // sprite_height = 835px; num_rows = 16; pegman_angle = [0, 360] deg
 		this.fire('svpc_change', { latlng: pos, heading: pov.heading, zoom: pov.zoom, pitch: pov.pitch });
 	},
 
