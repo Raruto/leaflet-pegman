@@ -130,7 +130,10 @@
 
 .pegman-marker {
   background: transparent url("maps.gstatic.com/api-3/cb_scout5.png") no-repeat scroll 0 -364px;
-  transition: transform .1s linear;
+}
+
+.pegman-marker:not(.leaflet-drag-target) {
+  transition: transform .2s linear;
 }
 
 .leaflet-left .pegman-control:hover .pegman-button {
@@ -202,7 +205,7 @@
 .leaflet-container:not(.leaflet-touch).leaflet-pegman-v3-default .pegman-control {
   width: 36px;
   height: 36px;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
 }
 
 .leaflet-container:not(.leaflet-touch).leaflet-pegman-v3-default .pegman-control .pegman-button {
