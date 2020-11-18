@@ -18,14 +18,11 @@
 	<script src="https://unpkg.com/leaflet-ui@0.4.6/dist/leaflet-ui.js"></script>
 
 	<!-- Leaflet-GoogleMutant -->
-	<!-- <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.8.0/Leaflet.GoogleMutant.js"></script> -->
+	<!-- <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.10.0/Leaflet.GoogleMutant.js"></script> -->
 
 	<!-- Leaflet-Pegman -->
-	<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet-pegman@0.1.5/leaflet-pegman.css" />
-	<script src="https://unpkg.com/leaflet-pegman@0.1.5/leaflet-pegman.js"></script> -->
-
-	<link rel="stylesheet" href="../leaflet-pegman.css" />
-	<script src="../leaflet-pegman.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet-pegman@0.1.6/leaflet-pegman.css" />
+	<script src="https://unpkg.com/leaflet-pegman@0.1.6/leaflet-pegman.js"></script>
 
 	<style>
 		html,
@@ -93,7 +90,7 @@
 		var pegmanControl;
 		map.on('plugins_loaded', function() {
 			pegmanControl = new L.Control.Pegman({
-				// apiKey: '',
+				apiKey: '' // CHANGE: with your google maps api key
 				position: 'bottomright', // position of control inside the map
 				theme: "leaflet-pegman-v3-small", // or "leaflet-pegman-v3-small"
 				panoDiv: '#panorama'
