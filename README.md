@@ -5,6 +5,12 @@
 
 A Leaflet plugin that allows easy integration with the Google StreetView Service API
 
+<p align="center">
+    <a href="https://raruto.github.io" rel="nofollow"><img src="https://raruto.github.io/img/pegman-bio.png" alt="Pegman Bio" /></a>
+</p>
+
+---
+
 _For a working example see one of the following demos:_
 
 - [traditional loading](https://raruto.github.io/leaflet-pegman/examples/leaflet-pegman.html)
@@ -13,11 +19,13 @@ _For a working example see one of the following demos:_
 
 ---
 
-<p align="center">
-    <a href="https://raruto.github.io" rel="nofollow"><img src="https://raruto.github.io/img/pegman-bio.png" alt="Pegman Bio" /></a>
-</p>
+<blockquote>
+    <p align="center">
+        <em>Initially based on the <a href="http://jsfiddle.net/pegues/a5mn1ogu/">work</a> of <strong>Daniel Pegues</strong></em>
+    </p>
+</blockquote>
 
-> _Initally based on the [work](http://jsfiddle.net/pegues/a5mn1ogu/) of **Daniel Pegues**_
+---
 
 ## How to use
 
