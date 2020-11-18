@@ -23,6 +23,15 @@ L.Control.Pegman = L.Control.extend({
 			enableCloseButton: true,
 			fullscreenControl: false,
 			imageDateControl: true
+		},
+		marker: {
+			draggable: true,
+			icon: L.icon({
+				className: "pegman-marker",
+				iconSize: [52, 52],
+				iconAnchor: [24, 33],
+				iconUrl: 'data:image/png;base64,' + "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAFElEQVR4XgXAAQ0AAABAMP1L30IDCPwC/o5WcS4AAAAASUVORK5CYII=",
+			}),
 		}
 	},
 
@@ -61,15 +70,6 @@ L.Control.Pegman = L.Control.extend({
 			onend: L.bind(this.onDraggableEnd, this),
 		};
 
-		this._pegmanMarkerOpts = {
-			draggable: true,
-			icon: L.icon({
-				className: "pegman-marker",
-				iconSize: [52, 52],
-				iconAnchor: [26, 13],
-				iconUrl: 'data:image/png;base64,' + "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAFElEQVR4XgXAAQ0AAABAMP1L30IDCPwC/o5WcS4AAAAASUVORK5CYII=",
-			}),
-		};
 		this._lazyLoaderAdded = false;
 	},
 
@@ -79,7 +79,7 @@ L.Control.Pegman = L.Control.extend({
 		this._container = L.DomUtil.create('div', 'leaflet-pegman pegman-control leaflet-bar');
 		this._pegman = L.DomUtil.create('div', 'pegman draggable drag-drop', this._container);
 		this._pegmanButton = L.DomUtil.create('div', 'pegman-button', this._container);
-		this._pegmanMarker = L.marker([0, 0], this._pegmanMarkerOpts);
+		this._pegmanMarker = L.marker([0, 0], this.options.marker);
 		this._panoDiv = this.options.panoDiv ? document.querySelector(this.options.panoDiv) : L.DomUtil.create('div', '', this._map._container);
 
 		L.DomUtil.addClass(this._panoDiv, 'pano-canvas');
@@ -285,17 +285,18 @@ L.Control.Pegman = L.Control.extend({
 		this.clear();
 	},
 
-	onPanoramaChangeView: function() {
+	onPanoramaPositionChanged: function() {
 		var pos = this._panorama.getPosition();
-		var pov = this._panorama.getPov();
-		if (!pos || !pov) return;
 		pos = L.latLng(pos.lat(), pos.lng());
 		if (this._map && !this._map.getBounds().pad(-0.05).contains(pos)) {
 			this._map.panTo(pos);
 		}
 		this._pegmanMarker.setLatLng(pos);
+	},
+
+	onPanoramaPovChanged: function() {
+		var pov = this._panorama.getPov();
 		this._pegmanMarker.getElement().style.backgroundPosition = "0 " + -Math.abs((Math.round(pov.heading / (360 / 16)) % 16) * Math.round(835 / 16)) + 'px'; // sprite_height = 835px; num_rows = 16; pegman_angle = [0, 360] deg
-		this.fire('svpc_change', { latlng: pos, heading: pov.heading, zoom: pov.zoom, pitch: pov.pitch });
 	},
 
 	clear: function() {
@@ -357,23 +358,23 @@ L.Control.Pegman = L.Control.extend({
 			return this.pegmanAdd();
 		}
 
-		var searchRadiusPx = 24,
-			latlng = L.latLng(lat, lng),
-			p = this._map.project(latlng).add([searchRadiusPx, 0]),
-			searchRadiusMeters = latlng.distanceTo(this._map.unproject(p));
+		// var searchRadiusPx = 24,
+		// 	latlng = L.latLng(lat, lng),
+		// 	p = this._map.project(latlng).add([searchRadiusPx, 0]),
+		// 	searchRadius = latlng.distanceTo(this._map.unproject(p));
 
 		this._streetViewCoords = new google.maps.LatLng(lat, lng);
 
-		// var zoom = this._map.getZoom();
-		// var searchRadius = 100;
-		//
-		// if (zoom < 6) searchRadius = 5000;
-		// else if (zoom < 10) searchRadius = 500;
-		// else if (zoom < 15) searchRadius = 250;
-		// else if (zoom >= 17) searchRadius = 50;
-		// else searchRadius = 100;
+		var zoom = this._map.getZoom();
+		var searchRadius = 100;
 
-		this._streetViewService.getPanoramaByLocation(this._streetViewCoords, searchRadiusMeters, L.bind(this.processStreetViewServiceData, this));
+		if (zoom < 6) searchRadius = 5000;
+		else if (zoom < 10) searchRadius = 500;
+		else if (zoom < 15) searchRadius = 250;
+		else if (zoom >= 17) searchRadius = 50;
+		else searchRadius = 100;
+
+		this._streetViewService.getPanoramaByLocation(this._streetViewCoords, searchRadius, L.bind(this.processStreetViewServiceData, this));
 	},
 
 	processStreetViewServiceData: function(data, status) {
@@ -450,8 +451,8 @@ L.Control.Pegman = L.Control.extend({
 		this._streetViewService = new google.maps.StreetViewService();
 
 		this._panorama.addListener('closeclick', L.bind(this.onStreetViewPanoramaClose, this));
-		this._panorama.addListener('position_changed', L.bind(this.onPanoramaChangeView, this));
-		this._panorama.addListener('pov_changed', L.bind(this.onPanoramaChangeView, this));
+		this._panorama.addListener('position_changed', L.bind(this.onPanoramaPositionChanged, this));
+		this._panorama.addListener('pov_changed', L.bind(this.onPanoramaPovChanged, this));
 
 		if (toggleStreetView) {
 			this.showStreetViewLayer();
