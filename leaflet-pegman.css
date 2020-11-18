@@ -130,6 +130,7 @@
 
 .pegman-marker {
   background: transparent url("maps.gstatic.com/api-3/cb_scout5.png") no-repeat scroll 0 -364px;
+  transition: transform .1s linear;
 }
 
 .leaflet-left .pegman-control:hover .pegman-button {
