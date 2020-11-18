@@ -6,7 +6,7 @@
 A Leaflet plugin that allows easy integration with the Google StreetView Service API
 
 <p align="center">
-    <a href="https://raruto.github.io" rel="nofollow"><img src="https://raruto.github.io/img/pegman-bio.png" alt="Pegman Bio" /></a>
+    <a href="https://raruto.github.io/leaflet-pegman/examples/leaflet-pegman.html"><img src="https://raruto.github.io/img/pegman-bio.png" alt="Pegman Bio" /></a>
 </p>
 
 ---
