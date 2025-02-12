@@ -32,10 +32,7 @@ L.Control.Pegman = L.Control.extend({
 				iconAnchor: [24, 33],
 				iconUrl: 'data:image/png;base64,' + "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAFElEQVR4XgXAAQ0AAABAMP1L30IDCPwC/o5WcS4AAAAASUVORK5CYII=",
 			}),
-		},
-		// Setting this to false can save a lot of http requests (on every mouse move),
-		// but it will no longer show a mouse pointer when hovering a tile with content
-		downloadTiles: true
+		}
 	},
 
 	__interactURL: 'https://unpkg.com/interactjs@1.2.9/dist/interact.min.js',
@@ -293,7 +290,7 @@ L.Control.Pegman = L.Control.extend({
 	},
 
 	onPanoramaPositionChanged: function() {
-		var pos = this._getOrCreatePanorama().getPosition();
+		var pos = this._panorama.getPosition();
 		pos = L.latLng(pos.lat(), pos.lng());
 		if (this._map && !this._map.getBounds().pad(-0.05).contains(pos)) {
 			this._map.panTo(pos);
@@ -302,7 +299,7 @@ L.Control.Pegman = L.Control.extend({
 	},
 
 	onPanoramaPovChanged: function() {
-		var pov = this._getOrCreatePanorama().getPov();
+		var pov = this._panorama.getPov();
 		this._pegmanMarker.getElement().style.backgroundPosition = "0 " + -Math.abs((Math.round(pov.heading / (360 / 16)) % 16) * Math.round(835 / 16)) + 'px'; // sprite_height = 835px; num_rows = 16; pegman_angle = [0, 360] deg
 	},
 
@@ -387,16 +384,13 @@ L.Control.Pegman = L.Control.extend({
 	processStreetViewServiceData: function(data, status) {
 		if (status == google.maps.StreetViewStatus.OK) {
 			this.openStreetViewPanorama();
-
-			var panorama = this._getOrCreatePanorama();
-
-			panorama.setPano(data.location.pano);
-			panorama.setPov({
+			this._panorama.setPano(data.location.pano);
+			this._panorama.setPov({
 				heading: google.maps.geometry.spherical.computeHeading(data.location.latLng, this._streetViewCoords),
 				pitch: 0,
 				zoom: 0
 			});
-			panorama.setVisible(true);
+			this._panorama.setVisible(true);
 		} else {
 			console.warn("Street View data not found for this location.");
 			// this.clear(); // TODO: add a visual feedback when no SV data available
@@ -457,26 +451,16 @@ L.Control.Pegman = L.Control.extend({
 		this._googleStreetViewLayer = L.gridLayer.googleMutant(this.options.mutant);
 		this._googleStreetViewLayer.addGoogleLayer('StreetViewCoverageLayer');
 
-		this._streetViewService = new google.maps.StreetViewService();
-
-
-		if (toggleStreetView) {
-			this.showStreetViewLayer();
-		}
-	},
-
-	_getOrCreatePanorama: function() {
-		if (this._panorama != null) {
-			return this._panorama;
-		}
-
 		this._panorama = new google.maps.StreetViewPanorama(this._panoDiv, this.options.pano);
+		this._streetViewService = new google.maps.StreetViewService();
 
 		this._panorama.addListener('closeclick', L.bind(this.onStreetViewPanoramaClose, this));
 		this._panorama.addListener('position_changed', L.bind(this.onPanoramaPositionChanged, this));
 		this._panorama.addListener('pov_changed', L.bind(this.onPanoramaPovChanged, this));
 
-		return this._panorama;
+		if (toggleStreetView) {
+			this.showStreetViewLayer();
+		}
 	},
 
 	_initMouseTracker: function() {
@@ -548,7 +532,7 @@ L.Control.Pegman = L.Control.extend({
 	},
 
 	_downloadTile: function(imageSrc, callback) {
-		if (!imageSrc || !this.options.downloadTiles) return;
+		if (!imageSrc) return;
 		var img = new Image();
 		img.crossOrigin = "Anonymous";
 		img.addEventListener("load", callback.bind(this, img), false);
