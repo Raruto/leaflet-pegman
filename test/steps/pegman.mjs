@@ -67,6 +67,38 @@ Given('a lazy Pegman control', async function() {
     window.control = new L.Control.Pegman({ apiKey: 'test-key' }).addTo(map);
   });
 });
+Then('unused lazy controls do not load Google dependencies', async function() {
+  assert.equal(this.requests.some(url => url.includes('maps.googleapis.com/maps/api/js')
+    || url.includes('leaflet.gridlayer.googlemutant')), false);
+  assert.deepEqual(await this.page.evaluate(() => [
+    typeof window.google, !!control._panorama, !!control._googleStreetViewLayer,
+  ]), ['undefined', false, false]);
+});
+Then('preloaded Google services are initialized before interaction', async function() {
+  assert.deepEqual(await this.page.evaluate(() => [
+    googleState.panoramas.length, !!control._streetViewService,
+    !!control._googleStreetViewLayer, control._streetViewLayerEnabled, googleState.requests.length,
+  ]), [1, true, true, false, 0]);
+});
+Then('an invalid location warns without opening a panorama and Escape docks Pegman', async function() {
+  const warnings = [];
+  this.page.on('console', message => {
+    if (message.type() === 'warning') warnings.push(message.text());
+  });
+  await this.page.evaluate(() => { googleState.status = 'ZERO_RESULTS'; });
+  await this.page.locator('.pegman-control').click();
+  await this.page.locator('#map').click({ position: { x: 300, y: 200 } });
+  assert.deepEqual(await this.page.evaluate(() => [
+    !!control._panorama.visible, map.hasLayer(control._pegmanMarker),
+    control._container.classList.contains('active'), googleState.requests.length,
+  ]), [false, true, true, 1]);
+  assert.ok(warnings.includes('Street View data not found for this location.'));
+  await this.page.keyboard.press('Escape');
+  assert.deepEqual(await this.page.evaluate(() => [
+    map.hasLayer(control._pegmanMarker), control._container.classList.contains('active'),
+    control._streetViewLayerEnabled, control._panoDiv.style.display,
+  ]), [false, false, false, 'none']);
+});
 Then('removing and readding it before loading dependencies is safe', async function() {
   assert.deepEqual(await this.page.evaluate(() => {
     control.remove();
@@ -89,7 +121,8 @@ Then('the mocked lazy services open one panorama', async function() {
   const googleUrl = new URL(this.requests.find(url => url.includes('maps.googleapis.com')));
   assert.equal(googleUrl.searchParams.get('key'), 'test-key');
   assert.ok(googleUrl.searchParams.get('libraries').split(',').includes('geometry'));
-  assert.ok(this.requests.some(url => url.includes('@0.16.0/dist/Leaflet.GoogleMutant.js')));
+  assert.equal(this.requests.filter(url => url.includes('maps.googleapis.com/maps/api/js')).length, 1);
+  assert.equal(this.requests.filter(url => url.includes('@0.16.0/dist/Leaflet.GoogleMutant.js')).length, 1);
   if (this.leafletVersion.startsWith('2.')) {
     assert.equal(await this.page.evaluate(() => control._googleStreetViewLayer instanceof L.GridLayer.GoogleMutant), true);
     assert.ok(!(await this.page.evaluate(() => 'gridLayer' in L)), 'No Leaflet factory polyfill');
@@ -166,6 +199,7 @@ Then('both public stylesheets retain the original image URLs', async function() 
   }
 });
 Then('local coverage tiles can be sampled for the mouse cursor', async function() {
+  await this.page.evaluate(() => { window.basemapBeforeCoverage = Object.values(map._layers).filter(layer => layer instanceof L.TileLayer); });
   await this.page.evaluate(() => control.showStreetViewLayer());
   await this.page.waitForFunction(() => !!control._googleStreetViewLayer._mutant);
   await this.page.evaluate(() => {
@@ -202,6 +236,9 @@ Then('local coverage tiles can be sampled for the mouse cursor', async function(
     const layer = control._googleStreetViewLayer;
     return layer._tiles[layer._tileCoordsToKey(coverageCoords)].el.querySelector('img').src.includes('!2ssvv!');
   }), true, 'Coverage survives background tile mutations and reactivation');
+  assert.equal(await this.page.evaluate(() =>
+    basemapBeforeCoverage.length > 0 && basemapBeforeCoverage.every(layer => map.hasLayer(layer))),
+  true, 'Activating coverage preserves the original basemap');
   await this.page.evaluate(() => control._getTileImage(coverageCoords));
   await this.page.waitForFunction(() => !!control.tileContext);
   assert.equal(await this.page.evaluate(() => control._hasTileData(null, { x: 10, y: 10 })), true);
