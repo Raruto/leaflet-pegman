@@ -18,6 +18,7 @@ function installGoogleStub() {
   }
   class GoogleMap {
     constructor(container, options) {
+      this.options = options;
       this.zoom = options.zoom;
       const positions = new Map();
       for (const index of [1, 2, 3]) positions.set(index, document.createElement('div'));

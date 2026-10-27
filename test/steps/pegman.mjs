@@ -17,6 +17,9 @@ When('I add a Pegman control', async function() {
 Then('clicking the control toggles coverage', async function() {
   await this.page.locator('.pegman-control').click();
   await this.page.waitForFunction(() => control._streetViewLayerEnabled && googleState.coverage.length === 1);
+  assert.deepEqual(await this.page.evaluate(() => googleState.maps[0].options.styles), [
+    { featureType: 'all', elementType: 'all', stylers: [{ visibility: 'off' }] },
+  ]);
   assert.equal(await this.page.evaluate(() => control._googleStreetViewLayer instanceof L.GridLayer.GoogleMutant), true);
   await this.page.waitForFunction(() => !!control._googleStreetViewLayer._attributionContainer);
   await this.page.locator('.pegman-control').click();
@@ -174,13 +177,31 @@ Then('local coverage tiles can be sampled for the mouse cursor', async function(
     context.fillStyle = 'red';
     context.fillRect(0, 0, 256, 256);
     const image = new Image();
-    image.src = canvas.toDataURL() + `#x=${coords.x}&y=${coords.y}&z=${coords.z}`;
+    image.src = canvas.toDataURL() + `#!1i${coords.z}!2i${coords.x}!3i${coords.y}!2ssvv!`;
     control._googleStreetViewLayer._mutantContainer.appendChild(image);
   });
   await this.page.waitForFunction(() => {
     const layer = control._googleStreetViewLayer;
     return !!layer._tiles[layer._tileCoordsToKey(coverageCoords)]?.el.querySelector('img');
   });
+  await this.page.evaluate(() => {
+    const layer = control._googleStreetViewLayer;
+    const coverage = layer._mutantContainer.querySelector('img');
+    const background = coverage.cloneNode();
+    background.src = coverage.src.replace('!2ssvv!', '!2sm!');
+    layer._mutantContainer.appendChild(background);
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(background.cloneNode());
+    layer._mutantContainer.appendChild(wrapper);
+  });
+  await this.page.evaluate(() => {
+    control.hideStreetViewLayer();
+    control.showStreetViewLayer();
+  });
+  assert.equal(await this.page.evaluate(() => {
+    const layer = control._googleStreetViewLayer;
+    return layer._tiles[layer._tileCoordsToKey(coverageCoords)].el.querySelector('img').src.includes('!2ssvv!');
+  }), true, 'Coverage survives background tile mutations and reactivation');
   await this.page.evaluate(() => control._getTileImage(coverageCoords));
   await this.page.waitForFunction(() => !!control.tileContext);
   assert.equal(await this.page.evaluate(() => control._hasTileData(null, { x: 10, y: 10 })), true);

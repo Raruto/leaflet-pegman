@@ -18,6 +18,7 @@ L.Control.Pegman = L.Control.extend({
     mutant: {
       attribution: 'Map data: &copy; <a href="https://www.google.com/intl/en/help/terms_maps.html">Google</a>',
       pane: "overlayPane",
+      styles: [{ featureType: "all", elementType: "all", stylers: [{ visibility: "off" }] }],
       type: null
       // Non-image map type (used to force a transparent background)
     },
@@ -475,7 +476,18 @@ L.Control.Pegman = L.Control.extend({
     this._initMouseTracker();
   },
   _initGoogleMaps(toggleStreetView) {
+    // GoogleMutant 0.16.0 still uses this Leaflet 1 utility for cached tiles.
+    if (!L.Util.requestAnimFrame) {
+      L.Util = { ...L.Util, requestAnimFrame: callback => requestAnimationFrame(callback) };
+    }
     this._googleStreetViewLayer = new L.GridLayer.GoogleMutant(this.options.mutant);
+    const layer = this._googleStreetViewLayer;
+    const onMutatedImage = layer._onMutatedImage;
+    // ponytail: GoogleMutant 0.16.0 internals; use a public tile filter when available.
+    layer._onMutatedImage = function(image) {
+      if (image.src.includes("!2ssvv!")) onMutatedImage.call(this, image);
+    };
+    layer._boundOnMutatedImage = layer._onMutatedImage.bind(layer);
     this._googleStreetViewLayer.addGoogleLayer("StreetViewCoverageLayer");
     this._panorama = new google.maps.StreetViewPanorama(this._panoDiv, this.options.pano);
     this._streetViewService = new google.maps.StreetViewService();
