@@ -2,3 +2,6 @@
 .jshintrc
 .gitattributes
 _config.yml
+/build
+/test
+cucumber.mjs

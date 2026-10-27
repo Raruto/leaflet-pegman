@@ -7,17 +7,14 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<!-- Google Maps API -->
-	<!-- <script src="https://maps.googleapis.com/maps/api/js?key="></script> -->
-
-	<!-- interact.js -->
-	<!-- <script src="https://unpkg.com/interactjs@1.2.9/dist/interact.min.js"></script> -->
+	<!-- <script src="https://maps.googleapis.com/maps/api/js?key=&libraries=geometry"></script> -->
 
 	<!-- Leaflet (JS/CSS) -->
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
-	<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 	<!-- Leaflet-GoogleMutant -->
-	<!-- <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.10.0/Leaflet.GoogleMutant.js"></script> -->
+	<!-- <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.16.0/dist/Leaflet.GoogleMutant.js"></script> -->
 
 	<!-- Leaflet-Pegman -->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet-pegman@0.1.7/leaflet-pegman.css" />
@@ -60,22 +57,22 @@
 	<div id="map" class="map"></div>
 
 	<script>
-		var map = L.map('map', {
+		const map = new L.Map('map', {
 			zoomControl: false
 		});
 		map.setView(new L.LatLng(43.5978, 12.7059), 5);
 
-		var zoomControl = new L.Control.Zoom({
+		const zoomControl = new L.Control.Zoom({
 			position: 'topright',
 		});
 
-		var baseLayers = {};
+		const baseLayers = {};
 
-		baseLayers["ESRI World Imagery"] = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+		baseLayers["ESRI World Imagery"] = new L.TileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
 			maxZoom: 18,
 			attribution: '&copy; <a href="http://www.esri.com/">Esri</a>',
 		});
-		baseLayers["OpenTopoMap"] = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+		baseLayers["OpenTopoMap"] = new L.TileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
 			maxZoom: 17,
 			attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
 			opacity: 0.90
@@ -85,12 +82,12 @@
 			attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 		});
 
-		var layersControl = L.control.layers(baseLayers, null, {
+		const layersControl = new L.Control.Layers(baseLayers, null, {
 			position: 'topleft',
 			collapsed: false,
 		});
 
-		var pegmanControl = new L.Control.Pegman({
+		const pegmanControl = new L.Control.Pegman({
 			position: 'bottomright', // position of control inside the map
 			theme: "leaflet-pegman-v3-small", // or "leaflet-pegman-v3-default"
 			apiKey: '' // CHANGE: with your google maps api key

@@ -7,18 +7,14 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
 	<!-- Google Maps API -->
-	<!-- <script src="https://maps.googleapis.com/maps/api/js?key="></script> -->
-
-	<!-- interact.js -->
-	<!-- <script src="https://unpkg.com/interactjs@1.2.9/dist/interact.min.js"></script> -->
+	<!-- <script src="https://maps.googleapis.com/maps/api/js?key=&libraries=geometry"></script> -->
 
 	<!-- Leaflet (JS/CSS) -->
-	<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" /> -->
-	<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet-src.js"></script>
-	<script src="https://unpkg.com/leaflet-ui@0.4.6/dist/leaflet-ui.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 	<!-- Leaflet-GoogleMutant -->
-	<!-- <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.10.0/Leaflet.GoogleMutant.js"></script> -->
+	<!-- <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.16.0/dist/Leaflet.GoogleMutant.js"></script> -->
 
 	<!-- Leaflet-Pegman -->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet-pegman@0.1.7/leaflet-pegman.css" />
@@ -69,36 +65,22 @@
 	<div id="panorama" class="panorama"></div>
 
 	<script>
-		var map = L.map('map', {
+		const map = new L.Map('map', {
 			center: [45.47036148132197, 9.179473109543324],
 			zoom: 15,
-			mapTypeId: 'topo',
-			pegmanControl: false,
-			printControl: false,
-			searchControl: false,
-			layersControl: false,
-			minimapControl: false,
-			locateControl: false,
-			zoomControl: {
-				position: 'topleft'
-			},
-			resizerControl: {
-				direction: 's'
-			},
-			gestureHandling: false,
 		});
-		var pegmanControl;
-		map.on('plugins_loaded', function() {
-			pegmanControl = new L.Control.Pegman({
-				apiKey: '', // CHANGE: with your google maps api key
-				position: 'bottomright', // position of control inside the map
-				theme: "leaflet-pegman-v3-small", // or "leaflet-pegman-v3-small"
-				panoDiv: '#panorama'
-			});
-			pegmanControl.addTo(map);
-			// pegmanControl.options.apiKey = '';
-			pegmanControl.findStreetViewData( 45.47036148132197, 9.179473109543324 );
+		new L.TileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+			maxZoom: 17,
+			attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="https://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+		}).addTo(map);
+		const pegmanControl = new L.Control.Pegman({
+			apiKey: '', // CHANGE: with your google maps api key
+			position: 'bottomright', // position of control inside the map
+			theme: "leaflet-pegman-v3-small", // or "leaflet-pegman-v3-default"
+			panoDiv: '#panorama'
 		});
+		pegmanControl.addTo(map);
+		pegmanControl.findStreetViewData(45.47036148132197, 9.179473109543324);
 	</script>
 
 	<a href="https://github.com/Raruto/leaflet-pegman" class="view-on-github" style="position: fixed;top: 10px;left: calc(50% - 60px);z-index: 9999;"> <img alt="View on Github" src="https://raruto.github.io/img/view-on-github.png" title="View on Github"

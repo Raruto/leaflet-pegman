@@ -28,7 +28,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background-image: url("maps.gstatic.com/api-3/cb_scout5.png");
+  background-image: url(maps.gstatic.com/api-3/cb_scout5.png);
   background-position: -145px -23px;
   background-repeat: no-repeat;
 }
@@ -49,7 +49,7 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  content: ' ';
+  content: " ";
   display: block;
   z-index: -1;
   opacity: 0.5;
@@ -76,8 +76,8 @@
   display: block;
   width: 19px;
   height: 32px;
-  content: ' ';
-  background-image: url("maps.gstatic.com/api-3/cb_scout5.png");
+  content: " ";
+  background-image: url(maps.gstatic.com/api-3/cb_scout5.png);
   background-repeat: no-repeat;
   background-position: -112px -4px;
 }
@@ -86,7 +86,7 @@
   position: absolute;
   width: 22px;
   height: 22px;
-  content: ' ';
+  content: " ";
   bottom: -18px;
   left: 50%;
   margin-left: -11px;
@@ -129,7 +129,7 @@
 }
 
 .pegman-marker {
-  background: transparent url("maps.gstatic.com/api-3/cb_scout5.png") no-repeat scroll 0 -364px;
+  background: transparent url(maps.gstatic.com/api-3/cb_scout5.png) no-repeat scroll 0 -364px;
 }
 
 .pegman-marker:not(.leaflet-drag-target) {
@@ -147,7 +147,7 @@
 }
 
 .leaflet-pegman-v3-default .pegman-control .pegman-button {
-  background-image: url("maps.gstatic.com/pegman_v3/runway-2x.png");
+  background-image: url(maps.gstatic.com/pegman_v3/runway-2x.png);
   background-position: -3px -55px;
   background-size: 45px;
 }
@@ -171,7 +171,7 @@
 }
 
 .leaflet-pegman-v3-small .pegman-control .pegman-button {
-  background-image: url("maps.gstatic.com/pegman_v3/runway-1x.png");
+  background-image: url(maps.gstatic.com/pegman_v3/runway-1x.png);
   background-position: 2px -27px;
   background-size: 25px;
 }
