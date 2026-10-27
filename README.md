@@ -80,7 +80,7 @@ _**NB** to be able to use the “pegman” (a.k.a. “Street View Control”) yo
 
 ---
 
-**Compatibile with:** Leaflet@1.9.4, Leaflet@2.0.0-alpha.1, gmaps@3.34, leaflet.googlemutant@0.16.0.0
+**Compatibile with:** Leaflet@1.9.4, Leaflet@2.0.0-alpha.1, gmaps@3.34, leaflet.googlemutant@0.16.0.
 
 ---
 
