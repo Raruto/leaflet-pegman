@@ -102,7 +102,13 @@ Before({ tags: '@browser' }, async function() {
   this.requests = [];
   await this.context.route('**/*', async route => {
     const url = route.request().url();
-    if (url.startsWith(`${baseUrl}/leaflet-pegman.`)) {
+    const spritePath = url.match(/^https:\/\/unpkg\.com\/leaflet-pegman(?:@[^/]+)?\/(maps\.gstatic\.com\/[^?]+)(?:\?|$)/);
+    if (spritePath) {
+      const { body, contentType } = await fetchCdn(`${baseUrl}/${spritePath[1]}`);
+      return route.fulfill({ body, contentType });
+    }
+    if (url.startsWith(`${baseUrl}/leaflet-pegman.`)
+      || /^https:\/\/unpkg\.com\/leaflet-pegman(?:@[^/]+)?\/leaflet-pegman(?:\.min)?\.(?:js|css)(?:\?|$)/.test(url)) {
       const requestURL = new URL(url);
       const pageURL = new URL(route.request().frame().url());
       const bundle = pageURL.searchParams.get('bundle') || 'readable';
