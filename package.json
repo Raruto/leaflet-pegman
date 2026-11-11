@@ -1,6 +1,6 @@
 {
   "name": "leaflet-pegman",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A Leaflet plugin that allows easy integration with the Google StreetView Service API",
   "main": "leaflet-pegman.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "test": "node build/test.js",
     "preversion": "node build/version.js",
     "version": "npm run build && git add -A",
-		"postversion": "git push --follow-tags"
+    "postversion": "git push --follow-tags"
   },
   "repository": {
     "type": "git",
