@@ -1,5 +1,5 @@
 @browser
-Feature: Pegman examples with Leaflet 1.9.4 and 2.0.0-alpha.1 and real GoogleMutant 0.16.0
+Feature: Pegman examples with Leaflet 1.9.4 and 2.0.0-beta.3 and real GoogleMutant 0.16.0
 
   @issue-6 @issue-7 @issue-12
   Scenario Outline: Controls, coverage, panorama and marker use the public bundle

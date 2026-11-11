@@ -1,5 +1,5 @@
 export default {
   paths: ['test/features/**/*.feature'],
-  import: ['test/support/**/*.mjs', 'test/steps/**/*.mjs'],
+  import: ['test/support/**/*.js', 'test/steps/**/*.js'],
   format: ['progress'],
 };

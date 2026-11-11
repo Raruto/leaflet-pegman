@@ -1,5 +1,5 @@
-import { build } from './build.mjs';
-import { startServer } from './server.mjs';
+import { build } from './build.js';
+import { startServer } from './server.js';
 
 const stopBuild = await build({ watch: true });
 let server;

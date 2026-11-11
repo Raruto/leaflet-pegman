@@ -42,8 +42,8 @@ _For a working example see one of the following demos:_
     <!-- Leaflet-GoogleMutant -->
     <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.16.0/dist/Leaflet.GoogleMutant.js"></script>
     <!-- Leaflet-Pegman -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-pegman@latest/leaflet-pegman.css" />
-    <script src="https://unpkg.com/leaflet-pegman@latest/leaflet-pegman.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-pegman@0.2.0/leaflet-pegman.css" />
+    <script src="https://unpkg.com/leaflet-pegman@0.2.0/leaflet-pegman.js"></script>
     ...
     </head>
     ```
@@ -58,10 +58,10 @@ _For a working example see one of the following demos:_
 3. **create your first simple “leaflet-pegman slippy map**
     ```html
     <script>
-      const map = L.map('map');
+      const map = new L.Map('map');
       map.setView(new L.LatLng(45, 9.5), 5);
 
-      const OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      const OpenTopoMap = new L.TileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         maxZoom: 17,
         attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
         opacity: 0.90
@@ -80,7 +80,7 @@ _**NB** to be able to use the “pegman” (a.k.a. “Street View Control”) yo
 
 ---
 
-**Compatibile with:** Leaflet@1.9.4, Leaflet@2.0.0-alpha.1, gmaps@3.34, leaflet.googlemutant@0.16.0.
+**Compatible with:** Leaflet@1.9.4, Leaflet@2.0.0-beta.3, Google Maps JavaScript API v3 and leaflet.googlemutant@0.16.0.
 
 ---
 

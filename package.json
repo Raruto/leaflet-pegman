@@ -4,9 +4,12 @@
   "description": "A Leaflet plugin that allows easy integration with the Google StreetView Service API",
   "main": "leaflet-pegman.js",
   "scripts": {
-    "build": "node build/build.mjs",
-    "dev": "node build/dev.mjs",
-    "test": "node build/test.mjs"
+    "build": "node build/build.js",
+    "dev": "node build/dev.js",
+    "test": "node build/test.js",
+    "preversion": "node build/version.js",
+    "version": "npm run build && git add -A",
+		"postversion": "git push --follow-tags"
   },
   "repository": {
     "type": "git",
@@ -30,7 +33,7 @@
   },
   "homepage": "https://github.com/Raruto/leaflet-pegman#readme",
   "peerDependencies": {
-    "leaflet": "^1.9.4 || 2.0.0-alpha.1",
+    "leaflet": "^1.9.4 || ^2.0.0-beta.3",
     "leaflet.gridlayer.googlemutant": "^0.16.0"
   },
   "devDependencies": {

@@ -62,7 +62,7 @@
 		});
 		map.setView(new L.LatLng(43.5978, 12.7059), 5);
 
-		const zoomControl = new L.Control.Zoom({
+		const zoomControl = new (L.ZoomControl || L.Control.Zoom)({
 			position: 'topright',
 		});
 
@@ -82,7 +82,7 @@
 			attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 		});
 
-		const layersControl = new L.Control.Layers(baseLayers, null, {
+		const layersControl = new (L.LayersControl || L.Control.Layers)(baseLayers, null, {
 			position: 'topleft',
 			collapsed: false,
 		});
