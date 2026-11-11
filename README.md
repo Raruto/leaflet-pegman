@@ -80,7 +80,11 @@ _**NB** to be able to use the “pegman” (a.k.a. “Street View Control”) yo
 
 ---
 
-**Compatible with:** Leaflet@1.9.4, Leaflet@2.0.0-beta.3, Google Maps JavaScript API v3 and leaflet.googlemutant@0.16.0.
+**Compatible with:**
+[![Leaflet 1.9.4](https://img.shields.io/badge/Leaflet-1.9.4-1EB300.svg?style=flat)](https://leafletjs.com/reference.html)
+[![Leaflet 2.0.0-beta.3](https://img.shields.io/badge/Leaflet-2.0.0--beta.3-1EB300.svg?style=flat)](https://leafletjs.com/reference.html)
+[![Google Maps JavaScript API v3](https://img.shields.io/badge/Google%20Maps%20JavaScript%20API-v3-1EB300.svg?style=flat)](https://developers.google.com/maps/documentation/javascript)
+[![leaflet.gridlayer.googlemutant 0.16.0](https://img.shields.io/badge/leaflet.gridlayer.googlemutant-0.16.0-1EB300.svg?style=flat)](https://www.npmjs.com/package/leaflet.gridlayer.googlemutant)
 
 ---
 
