@@ -9,7 +9,7 @@
     "test": "node build/test.js",
     "preversion": "node build/version.js",
     "version": "npm run build && git add -A",
-    "postversion": "git push --follow-tags"
+    "postversion": "npm publish && git push --follow-tags"
   },
   "repository": {
     "type": "git",

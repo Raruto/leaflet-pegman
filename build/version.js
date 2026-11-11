@@ -8,6 +8,23 @@ if (!newVersion) {
   throw new Error('npm_new_version is not set; run this script through npm version');
 }
 
+const npmCli = process.env.npm_execpath;
+if (!npmCli) {
+  throw new Error('npm_execpath is not set; run this script through npm version');
+}
+
+function npm(command) {
+  const result = spawnSync(process.execPath, [npmCli, command], { stdio: 'inherit' });
+  if (result.error) throw result.error;
+  if (result.signal) throw new Error(`npm ${command} terminated by ${result.signal}`);
+  return result.status;
+}
+
+if (npm('whoami') !== 0) {
+  if (npm('login') !== 0) throw new Error('npm login failed');
+  if (npm('whoami') !== 0) throw new Error('npm authentication check failed after login');
+}
+
 const { name } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const root = fileURLToPath(new URL('../', import.meta.url));
 const packageReference = new RegExp(`${name}@[0-9][0-9A-Za-z.+-]*`, 'g');
