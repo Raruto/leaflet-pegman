@@ -42,8 +42,8 @@ _For a working example see one of the following demos:_
     <!-- Leaflet-GoogleMutant -->
     <script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.16.0/dist/Leaflet.GoogleMutant.js"></script>
     <!-- Leaflet-Pegman -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-pegman@0.3.1/leaflet-pegman.css" />
-    <script src="https://unpkg.com/leaflet-pegman@0.3.1/leaflet-pegman.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-pegman@0.3.2/leaflet-pegman.css" />
+    <script src="https://unpkg.com/leaflet-pegman@0.3.2/leaflet-pegman.js"></script>
     ...
     </head>
     ```
