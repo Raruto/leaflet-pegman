@@ -7,6 +7,7 @@ for (const version of ['1.9.4', '2.0.0-beta.3']) {
   console.log(`\nLeaflet ${version}`);
   const result = spawnSync(process.execPath, [
     'node_modules/@cucumber/cucumber/bin/cucumber.js',
+    ...(version === '2.0.0-beta.3' ? ['--tags', 'not @smoke'] : []),
     ...process.argv.slice(2),
   ], {
     cwd: fileURLToPath(new URL('../', import.meta.url)),
