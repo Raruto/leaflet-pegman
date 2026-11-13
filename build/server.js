@@ -68,10 +68,16 @@ export function startServer(port = 8080) {
         response.writeHead(404).end('Not found');
         return;
       }
-      const content = await readFile(filename);
+      let content = await readFile(filename);
+      if (extname(filename) === '.html') {
+        content = Buffer.from(content.toString()
+          .replace(/https:\/\/unpkg\.com\/leaflet-pegman(?:@[^/\s"'<>]+)?\//g, '/')
+          .replace(/(["'])\/leaflet-pegman\.(js|css)(?=[?"'])/g, '$1/leaflet-pegman.min.$2'));
+      }
       response.writeHead(200, {
         'Content-Type': contentTypes[extname(filename)] || 'application/octet-stream',
         'Cache-Control': 'no-store',
+        'Content-Length': content.length,
       });
       response.end(request.method === 'HEAD' ? undefined : content);
     } catch (error) {
